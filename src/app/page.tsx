@@ -329,9 +329,9 @@ export default function DashboardPage() {
             © 2026 FHC-Elite. 專為金融股投資者打造的精密價值導航。
           </div>
           <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-500">
-            <span className="hover:text-white cursor-pointer transition-colors">產品指南</span>
-            <span className="hover:text-white cursor-pointer transition-colors">數據來源</span>
-            <span className="hover:text-white cursor-pointer transition-colors">開發日誌 (MVP v0.1)</span>
+            <Link href="/docs/product-guide" className="hover:text-white transition-colors">產品指南</Link>
+            <Link href="/docs/data-sources" className="hover:text-white transition-colors">數據來源</Link>
+            <Link href="/docs/changelog" className="hover:text-white transition-colors">開發日誌 (MVP v0.1)</Link>
           </div>
         </footer>
       </div>
