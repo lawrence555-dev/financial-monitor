@@ -1,5 +1,13 @@
 # FHC-Elite 需求文件 (Requirements Document)
 
+## 📖 目錄
+- [1. 核心目標 (Core Objectives)](#1-核心目標-core-objectives)
+- [2. 功能需求 (Functional Requirements)](#2-功能需求-functional-requirements)
+  - [2.1 基礎數據 (Market Data)](#21-基礎數據-market-data)
+  - [2.2 估值與分析 (Valuation & Analysis)](#22-估值與分析-valuation--analysis)
+  - [2.3 稅務與追蹤 (Tax & Watchlist)](#23-稅務與追蹤-tax--watchlist)
+- [3. UI/UX 需求 (Design Requirements)](#3-uiux-需求-design-requirements)
+
 ## 1. 核心目標 (Core Objectives)
 建立一個專注於「台灣 13 家金控公司」的深度監控平台，解決傳統看盤軟體資訊過於分散、缺乏橫向對比、以及估值標準不一的問題。
 
