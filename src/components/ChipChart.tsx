@@ -30,7 +30,7 @@ export default function ChipChart({ data }: ChipChartProps) {
                         cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                         itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
-                        labelStyle={{ display: 'none' }}
+                        labelStyle={{ fontSize: '10px', fontWeight: 'black', color: '#94a3b8', marginBottom: '4px' }}
                     />
                     <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" />
                     <Bar

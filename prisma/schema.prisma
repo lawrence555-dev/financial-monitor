@@ -35,6 +35,7 @@ model DailyPrice {
   price     Decimal
   volume    BigInt
   
+  @@unique([stockId, timestamp])
   @@index([stockId, timestamp])
 }
 

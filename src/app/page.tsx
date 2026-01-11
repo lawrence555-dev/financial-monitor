@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isChipLoading, setIsChipLoading] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<"all" | "民營" | "官股">("all");
@@ -79,36 +80,51 @@ export default function DashboardPage() {
 
     // Initial Data Load (Simulation + Real Fetch)
     const initData = async () => {
-      // Start with initial stock list
-      let currentStocks = INITIAL_STOCKS.map(s => ({
+      // 1. Initial State
+      setStocks(INITIAL_STOCKS.map(s => ({
         ...s,
-        data: generateData(s.price),
-        chipData: generateChipData(parseInt(s.id))
-      }));
-      setStocks(currentStocks);
+        data: [],
+        chipData: []
+      })));
 
       try {
+        // 2. Fetch Real-time Current Prices
         const res = await fetch("/api/stock-prices/realtime");
         const realData = await res.json();
 
         if (Array.isArray(realData)) {
+          // 3. Fetch Intraday History for all 13 stocks (Parallel)
+          const intradayPromises = INITIAL_STOCKS.map(async (s) => {
+            try {
+              const intraRes = await fetch(`/api/stock-prices/intraday?id=${s.id}`);
+              const intraData = await intraRes.json();
+              return { id: s.id, history: intraData };
+            } catch (e) {
+              return { id: s.id, history: [] };
+            }
+          });
+
+          const allHistory = await Promise.all(intradayPromises);
+
           setStocks(prev => prev.map(s => {
             const real = realData.find(r => r.id === s.id);
+            const history = allHistory.find(h => h.id === s.id)?.history || [];
+
             if (real) {
               return {
                 ...s,
                 price: real.price,
                 change: real.change,
+                diff: real.change, // Assuming diff is absolute change from TWSE
                 isUp: real.change >= 0,
-                // Regenerate sparkline data with real price as base
-                data: generateData(real.price)
+                data: history.length > 0 ? history : generateData(real.price)
               };
             }
             return s;
           }));
         }
       } catch (e) {
-        console.error("Realtime fetch failed, keeping simulated data.", e);
+        console.error("Data fetch failed.", e);
       }
     };
 
@@ -148,6 +164,29 @@ export default function DashboardPage() {
     }
   }, [selectedId, selectedStock]);
 
+  // Fetch Real Chip Data when selectedId changes
+  useEffect(() => {
+    if (selectedId) {
+      const fetchChipData = async () => {
+        setIsChipLoading(true);
+        try {
+          const res = await fetch(`/api/stock-chips?id=${selectedId}`);
+          const realChipData = await res.json();
+          if (Array.isArray(realChipData)) {
+            setStocks(prev => prev.map(s =>
+              s.id === selectedId ? { ...s, chipData: realChipData } : s
+            ));
+          }
+        } catch (error) {
+          console.error("Failed to fetch real chip data:", error);
+        } finally {
+          setIsChipLoading(false);
+        }
+      };
+      fetchChipData();
+    }
+  }, [selectedId]);
+
   // simulation: We've disabled the random walk as requested.
   // The system now only uses live data or the fixed production values.
   useEffect(() => {
@@ -166,7 +205,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center mb-10">
             <div>
               <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
-                金控價值網格 <span className="text-rise">13</span>
+                「金控全能價值導航」 <span className="text-rise">13</span>
               </h1>
               {mounted && (
                 <p className="text-slate-400 text-sm font-bold flex items-center gap-2">
@@ -265,22 +304,27 @@ export default function DashboardPage() {
 
                   <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">籌碼流向 (15D)</p>
-                      <ChipChart data={selectedStock.chipData} />
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        籌碼流向 (15D)
+                        {isChipLoading && <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" />}
+                      </p>
+                      <div className={cn("transition-opacity duration-300", isChipLoading ? "opacity-50" : "opacity-100")}>
+                        <ChipChart data={selectedStock.chipData} />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className={cn("p-4 bg-white/5 rounded-2xl border transition-all", isChipLoading ? "border-blue-500/20 animate-pulse" : "border-white/5")}>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">三大法人 (15D)</p>
                         <p className="text-lg font-black text-blue-400 font-mono tracking-tighter">
-                          {selectedStock.chipData.reduce((acc, curr) => acc + curr.institutional, 0).toLocaleString()}
+                          {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.institutional, 0).toLocaleString()}
                           <span className="text-[10px] text-slate-600 font-bold ml-1">張</span>
                         </p>
                       </div>
-                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                      <div className={cn("p-4 bg-white/5 rounded-2xl border transition-all", isChipLoading ? "border-purple-500/20 animate-pulse" : "border-white/5")}>
                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">官股行庫 (15D)</p>
                         <p className="text-lg font-black text-purple-400 font-mono tracking-tighter">
-                          {selectedStock.chipData.reduce((acc, curr) => acc + curr.government, 0).toLocaleString()}
+                          {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.government, 0).toLocaleString()}
                           <span className="text-[10px] text-slate-600 font-bold ml-1">張</span>
                         </p>
                       </div>
@@ -320,12 +364,12 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center px-2">
                       <span className="text-xs font-black text-slate-400 uppercase tracking-widest">散戶 FOMO 評分</span>
                       <span className="text-xs font-black text-fall font-mono">
-                        {Math.abs(parseInt(selectedStock.id) % 100)}/100
-                        {Math.abs(parseInt(selectedStock.id) % 100) > 70 ? " (極高)" : Math.abs(parseInt(selectedStock.id) % 100) > 30 ? " (中)" : " (低)"}
+                        {Math.min(100, Math.floor(Math.abs(selectedStock.change) * 20 + (parseInt(selectedStock.id) % 30)))}/100
+                        {Math.abs(selectedStock.change) * 20 + (parseInt(selectedStock.id) % 30) > 70 ? " (極高)" : " (中)"}
                       </span>
                     </div>
                     <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-fall" style={{ width: `${Math.abs(parseInt(selectedStock.id) % 100)}%` }} />
+                      <div className="h-full bg-fall" style={{ width: `${Math.min(100, Math.floor(Math.abs(selectedStock.change) * 20 + (parseInt(selectedStock.id) % 30)))}%` }} />
                     </div>
                     <Link href="/subscription" className="w-full">
                       <button className="w-full py-4 bg-rise text-white rounded-xl font-black shadow-lg shadow-rise/20 hover:scale-[1.02] active:scale-95 transition-all">

@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AreaChart, Area, ResponsiveContainer, YAxis } from "recharts";
-import { TrendingUp, TrendingDown, Info } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip } from "recharts";
+import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FhcCardProps {
@@ -56,10 +56,10 @@ export default function FhcCard({
                     </div>
                     <div className={cn(
                         "flex items-center justify-end gap-1 text-[10px] font-bold",
-                        isUp ? "text-rise" : "text-fall"
+                        change > 0 ? "text-rise" : change < 0 ? "text-fall" : "text-slate-400"
                     )}>
-                        {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                        <span>{isUp ? "+" : ""}{diff.toFixed(2)} ({isUp ? "+" : ""}{change.toFixed(2)}%)</span>
+                        {change > 0 ? <TrendingUp size={10} /> : change < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
+                        <span>{change > 0 ? "+" : ""}{diff.toFixed(2)} ({change > 0 ? "+" : ""}{change.toFixed(2)}%)</span>
                     </div>
                 </div>
             </div>
@@ -69,15 +69,33 @@ export default function FhcCard({
                     <AreaChart data={data}>
                         <defs>
                             <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={isUp ? "#ef4444" : "#22c55e"} stopOpacity={0.3} />
-                                <stop offset="95%" stopColor={isUp ? "#ef4444" : "#22c55e"} stopOpacity={0} />
+                                <stop offset="5%" stopColor={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"} stopOpacity={0.3} />
+                                <stop offset="95%" stopColor={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"} stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <YAxis hide domain={['dataMin - 0.2', 'dataMax + 0.2']} />
+                        <Tooltip
+                            trigger="hover"
+                            content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                    return (
+                                        <div className="glass bg-slate-950/90 border-white/10 p-2 rounded-lg shadow-2xl">
+                                            <p className="text-[10px] font-black text-white px-1 mb-1">
+                                                {payload[0].value?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </p>
+                                            <p className="text-[8px] font-bold text-slate-500 uppercase px-1">
+                                                即時報價
+                                            </p>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }}
+                        />
                         <Area
                             type="monotone"
                             dataKey="value"
-                            stroke={isUp ? "#ef4444" : "#22c55e"}
+                            stroke={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"}
                             strokeWidth={3}
                             fillOpacity={1}
                             fill={`url(#gradient-${id})`}
