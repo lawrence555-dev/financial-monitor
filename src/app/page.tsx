@@ -93,6 +93,7 @@ export default function DashboardPage() {
         const realData = await res.json();
 
         if (Array.isArray(realData)) {
+          const hasRealData = realData.length > 0;
           // 3. Fetch Intraday History for all 13 stocks (Parallel)
           const intradayPromises = INITIAL_STOCKS.map(async (s) => {
             try {
@@ -107,20 +108,17 @@ export default function DashboardPage() {
           const allHistory = await Promise.all(intradayPromises);
 
           setStocks(prev => prev.map(s => {
-            const real = realData.find(r => r.id === s.id);
+            const real = hasRealData ? realData.find(r => r.id === s.id) : null;
             const history = allHistory.find(h => h.id === s.id)?.history || [];
 
-            if (real) {
-              return {
-                ...s,
-                price: real.price,
-                change: real.change,
-                diff: real.change, // Assuming diff is absolute change from TWSE
-                isUp: real.change >= 0,
-                data: history.length > 0 ? history : generateData(real.price)
-              };
-            }
-            return s;
+            return {
+              ...s,
+              price: real ? real.price : s.price,
+              change: real ? real.change : s.change,
+              diff: real ? real.change : s.diff,
+              isUp: real ? real.change >= 0 : s.isUp,
+              data: history.length > 0 ? history : generateData(s.price)
+            };
           }));
         }
       } catch (e) {

@@ -6,21 +6,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum PlanType {
-  FREE
-  PRO
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Stock {
   stockId         String         @id // e.g., "2881"
   name            String
   category        String         // "官股" or "民營"
-  bookValue       Decimal?       // 每股淨值
-  dividendPolicy  Decimal?       // 盈餘分配率
+  bookValue       Float?         // 每股淨值
+  dividendPolicy  Float?         // 盈餘分配率
   prices          DailyPrice[]
   chips           ChipAnalysis[]
   createdAt       DateTime       @default(now())
@@ -32,7 +27,7 @@ model DailyPrice {
   stockId   String
   stock     Stock    @relation(fields: [stockId], references: [stockId])
   timestamp DateTime
-  price     Decimal
+  price     Float
   volume    BigInt
   
   @@unique([stockId, timestamp])
@@ -46,7 +41,7 @@ model ChipAnalysis {
   date                DateTime
   institutionalBuy    BigInt   // 三大法人合計買賣超
   governmentBankBuy   BigInt   // 官股行庫買賣超
-  retailFomoScore     Decimal? // 散戶擁擠度評分
+  retailFomoScore     Float?   // 散戶擁擠度評分
   
   @@unique([stockId, date])
 }
@@ -54,8 +49,8 @@ model ChipAnalysis {
 model UserSubscription {
   userId      String    @id @default(uuid())
   email       String    @unique
-  planType    PlanType  @default(FREE)
-  avgCost     Json?     // e.g., {"2881": 65.2}
+  planType    String    @default("FREE")
+  avgCost     String?   // e.g., '{"2881": 65.2}' stored as string
   expiryDate  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
