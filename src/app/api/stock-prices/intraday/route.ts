@@ -14,6 +14,10 @@ export async function GET(request: Request) {
         return NextResponse.json(prices);
     } catch (error: any) {
         console.error("Intraday API Error:", error);
-        return NextResponse.json({ error: "Failed to fetch intraday data" }, { status: 500 });
+        const errorDetails = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({
+            error: "Failed to fetch intraday data",
+            details: errorDetails
+        }, { status: 500 });
     }
 }

@@ -109,9 +109,8 @@ export default function DashboardPage() {
 
           setStocks(prev => prev.map(s => {
             const real = hasRealData ? realData.find(r => r.id === s.id) : null;
-            const history = Array.isArray(allHistory.find(h => h.id === s.id)?.history)
-              ? allHistory.find(h => h.id === s.id)?.history
-              : [];
+            const historyItem = allHistory.find(h => h.id === s.id);
+            const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
 
             return {
               ...s,
