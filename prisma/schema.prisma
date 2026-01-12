@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Stock {
@@ -40,8 +40,8 @@ model ChipAnalysis {
   stockId             String
   stock               Stock    @relation(fields: [stockId], references: [stockId])
   date                DateTime
-  institutionalBuy    BigInt   // 三大法人合計買賣超
-  governmentBankBuy   BigInt   // 官股行庫買賣超
+  institutionalBuy    BigInt
+  governmentBankBuy   BigInt
   retailFomoScore     Float?   // 散戶擁擠度評分
   
   @@unique([stockId, date])
