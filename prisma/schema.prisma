@@ -18,6 +18,7 @@ model Stock {
   dividendPolicy  Float?         // 盈餘分配率
   prices          DailyPrice[]
   chips           ChipAnalysis[]
+  portfolioHoldings PortfolioHolding[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
@@ -30,7 +31,7 @@ model DailyPrice {
   price     Float
   volume    BigInt
   
-  @@unique([stockId, timestamp])
+  @@unique([stockId, timestamp], name: "stockId_timestamp")
   @@index([stockId, timestamp])
 }
 
@@ -54,4 +55,18 @@ model UserSubscription {
   expiryDate  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model PortfolioHolding {
+  id        String   @id @default(uuid())
+  stockId   String
+  stock     Stock    @relation(fields: [stockId], references: [stockId])
+  avgCost   Float    // 平均成本
+  quantity  Int      // 持有股數
+  userId    String   @default("default-user") // 預設單一用戶
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, stockId])
+  @@index([userId])
 }

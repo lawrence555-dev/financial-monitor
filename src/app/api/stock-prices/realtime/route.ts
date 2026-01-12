@@ -13,7 +13,20 @@ export async function GET() {
             return NextResponse.json([]); // Return empty array during non-trading times
         }
 
-        const data = await response.json();
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            console.warn("TWSE API did not return JSON:", contentType);
+            return NextResponse.json([]);
+        }
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error("Failed to parse TWSE JSON:", e);
+            return NextResponse.json([]);
+        }
+
         if (!Array.isArray(data)) return NextResponse.json([]);
 
         // FHC Stock IDs we care about

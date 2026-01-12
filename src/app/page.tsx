@@ -117,7 +117,7 @@ export default function DashboardPage() {
               change: real ? real.change : s.change,
               diff: real ? real.change : s.diff,
               isUp: real ? real.change >= 0 : s.isUp,
-              data: history.length > 0 ? history : generateData(s.price)
+              data: history // Only use real history
             };
           }));
         }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LayoutGrid, Calculator, BrainCircuit, Star, Settings } from "lucide-react";
+import { Home, LayoutGrid, Calculator, BrainCircuit, Briefcase, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
     { icon: Home, label: "總覽", href: "/" },
     { icon: LayoutGrid, label: "價值位階", href: "/valuation" },
-    { icon: Star, label: "自選追蹤", href: "/watchlist" },
+    { icon: Briefcase, label: "投資組合", href: "/portfolio" },
     { icon: Calculator, label: "稅務計算", href: "/tax" },
     { icon: BrainCircuit, label: "AI 研究室", href: "/ai-lab" },
     { icon: Settings, label: "系統設定", href: "/settings" },

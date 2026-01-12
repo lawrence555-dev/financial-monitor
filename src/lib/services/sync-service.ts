@@ -1,6 +1,23 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+/**
+ * 刪除超過 24 小時的分時數據，確保資料庫僅保留當日/最新數據。
+ */
+export async function cleanupOldIntradayData() {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    try {
+        const result = await prisma.dailyPrice.deleteMany({
+            where: {
+                timestamp: {
+                    lt: twentyFourHoursAgo
+                }
+            }
+        });
+        console.log(`Cleaned up ${result.count} old daily price records.`);
+    } catch (e) {
+        console.error("Cleanup failed:", e);
+    }
+}
 
 export async function syncIntradayData(stockId: string) {
     const today = new Date();
@@ -43,9 +60,12 @@ export async function syncIntradayData(stockId: string) {
             const dataToInsert = timestamps.map((ts: number, i: number) => ({
                 stockId,
                 timestamp: new Date(ts * 1000),
-                price: quotes[i] || 0, // Direct number for Float
+                price: quotes[i] || 0,
                 volume: BigInt(volumes[i] || 0)
-            })).filter((item: any) => item.price > 0);
+            })).filter((item: any) => {
+                const isToday = item.timestamp.toDateString() === new Date().toDateString();
+                return item.price > 0 && isToday;
+            });
 
             console.log(`Syncing ${dataToInsert.length} points for ${stockId}...`);
 
@@ -96,16 +116,16 @@ export async function getIntradayPrices(stockId: string) {
 
     if (!refreshedLatest) return [];
 
-    // 4. 抓取「最新有資料的那一天」的所有分時數據
-    const lastTradingDay = new Date(refreshedLatest.timestamp);
-    lastTradingDay.setHours(0, 0, 0, 0);
+    // 4. 僅抓取「今日」的分時數據
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const prices = await prisma.dailyPrice.findMany({
         where: {
             stockId,
             timestamp: {
-                gte: lastTradingDay,
-                lt: new Date(lastTradingDay.getTime() + 24 * 60 * 60 * 1000)
+                gte: today,
+                lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
             }
         },
         orderBy: { timestamp: "asc" }
