@@ -76,7 +76,7 @@ model TaxScenario {
   userId        String   @default("default-user")
   stockId       String
   stockName     String
-  shares        Int
+  shares        BigInt
   price         Float
   dividend      Float
   totalDividend Float

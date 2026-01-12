@@ -28,20 +28,27 @@ export async function POST(request: Request) {
                 userId: userId || "default-user",
                 stockId,
                 stockName,
-                shares,
-                price,
-                dividend,
-                totalDividend,
-                netDividend,
-                nhiPremium,
-                taxCredit
+                shares: BigInt(Math.floor(shares || 0)),
+                price: Number(price || 0),
+                dividend: Number(dividend || 0),
+                totalDividend: Number(totalDividend || 0),
+                netDividend: Number(netDividend || 0),
+                nhiPremium: Number(nhiPremium || 0),
+                taxCredit: Number(taxCredit || 0)
             }
         });
 
-        return NextResponse.json(newScenario);
-    } catch (error) {
+        // Serialization for BigInt
+        return NextResponse.json({
+            ...newScenario,
+            shares: Number(newScenario.shares)
+        });
+    } catch (error: any) {
         console.error("Failed to save tax scenario:", error);
-        return NextResponse.json({ error: "Failed to save tax scenario" }, { status: 500 });
+        return NextResponse.json({
+            error: "Failed to save tax scenario",
+            details: error?.message || String(error)
+        }, { status: 500 });
     }
 }
 
