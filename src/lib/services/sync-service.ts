@@ -27,10 +27,14 @@ export async function syncIntradayData(stockId: string) {
         // Yahoo Finance Intraday API (5m interval for 5 days to handle weekends)
         const symbol = `${stockId}.TW`;
         const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=5m&range=5d`);
+        if (!res.ok) {
+            console.error(`Yahoo API returned ${res.status} for ${symbol}`);
+            return;
+        }
         const data = await res.json();
 
-        if (!data.chart || !data.chart.result) {
-            console.warn(`No data found for ${symbol}`);
+        if (!data || !data.chart || !data.chart.result) {
+            console.warn(`No data structure found for ${symbol}`);
             return;
         }
 
@@ -131,9 +135,19 @@ export async function getIntradayPrices(stockId: string) {
         orderBy: { timestamp: "asc" }
     });
 
-    return prices.map(p => ({
-        time: p.timestamp.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-        value: parseFloat(p.price.toString()),
-        timestamp: p.timestamp
-    }));
+    return prices.map(p => {
+        try {
+            return {
+                time: p.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                value: typeof p.price === 'number' ? p.price : parseFloat(String(p.price)),
+                timestamp: p.timestamp
+            };
+        } catch (e) {
+            return {
+                time: "00:00",
+                value: 0,
+                timestamp: p.timestamp
+            };
+        }
+    });
 }
