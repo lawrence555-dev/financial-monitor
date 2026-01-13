@@ -170,13 +170,27 @@ export async function performGlobalSync() {
 
 /**
  * 從快取中獲取即時數據 (全站通用)
+ * 如果快取超過 1 分鐘則強制刷新
  */
 export async function getCachedStocks() {
     if (fs.existsSync(CACHE_PATH)) {
         try {
             const data = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8"));
+            const lastUpdated = new Date(data.lastUpdated || 0);
+            const now = new Date();
+            const diffMs = now.getTime() - lastUpdated.getTime();
+
+            // 如果快取超過 1 分鐘，強制刷新
+            if (diffMs > 60000) {
+                console.log("[Cache] Stale cache, forcing refresh...");
+                await performGlobalSync();
+                const freshData = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8"));
+                return freshData.stocks ? Object.values(freshData.stocks) : [];
+            }
+
             return data.stocks ? Object.values(data.stocks) : [];
         } catch (e) {
+            console.error("[Cache] Read error:", e);
             return [];
         }
     }

@@ -1,65 +1,80 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 
-// 從 TWSE 獲取三大法人買賣超資料
-async function fetchInstitutionalTrades(stockId: string, days: number = 15) {
-    const chipData: any[] = [];
+// 從 TWSE 抓取真實三大法人買賣超資料
+async function fetchTWSEChipData(stockId: string, days: number = 15) {
+    const chipHistory: any[] = [];
+    const today = new Date();
 
-    try {
-        // 模擬真實邏輯：從 TWSE 獲取三大法人數據
-        // 真實 URL: https://www.twse.com.tw/fund/T86?response=json&date=20260113&selectType=ALLBUT0999
+    // 獲取最近 N 個交易日的數據
+    for (let i = 0; i < days; i++) {
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() - i);
 
-        // 目前階段：先從 prisma 數據庫讀取（如果有）
-        const dbChipData = await prisma.chipAnalysis.findMany({
-            where: { stockId: stockId },
-            orderBy: { date: "desc" },
-            take: days
-        });
+        // 跳過週末
+        const dayOfWeek = targetDate.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
-        if (dbChipData.length > 0) {
-            return dbChipData.map(d => ({
-                date: new Intl.DateTimeFormat('zh-TW', { month: '2-digit', day: '2-digit' }).format(d.date),
-                institutional: Number(d.institutionalBuy),
-                government: Number(d.governmentBankBuy)
-            }));
-        }
+        const dateStr = targetDate.toISOString().slice(0, 10).replace(/-/g, '');
 
-        // 如果資料庫沒有數據，生成基於真實模式的模擬數據
-        // 這個模擬會基於股價波動來推算合理的法人買賣量
-        const priceHistory = await prisma.dailyPrice.findMany({
-            where: { stockId: stockId },
-            orderBy: { timestamp: "desc" },
-            take: days
-        });
+        try {
+            const res = await fetch(
+                `https://www.twse.com.tw/rwd/zh/fund/T86?response=json&date=${dateStr}&selectType=ALLBUT0999`,
+                {
+                    headers: {
+                        "User-Agent": "Mozilla/5.0",
+                        "Accept": "application/json"
+                    }
+                }
+            );
 
-        if (priceHistory.length > 0) {
-            for (let i = 0; i < Math.min(days, priceHistory.length); i++) {
-                const priceData = priceHistory[i];
-                const date = new Date(priceData.timestamp);
+            if (!res.ok) continue;
 
-                // 基於價格變動推算法人動向（正相關但有延遲）
-                const priceChange = i < priceHistory.length - 1
-                    ? Number(priceData.price) - Number(priceHistory[i + 1].price)
-                    : 0;
+            const data = await res.json();
 
-                // 法人通常在上漲時買入，但力度小於散戶
-                const institutional = Math.round(priceChange * 1000 + (Math.random() - 0.5) * 500);
-                // 官股通常與外資反向，力度更保守
-                const government = Math.round(-priceChange * 300 + (Math.random() - 0.5) * 200);
+            if (data.stat !== "OK" || !data.data) continue;
 
-                chipData.push({
-                    date: `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`,
+            // 找到目標股票
+            const stockRow = data.data.find((row: string[]) => row[0] === stockId);
+
+            if (stockRow) {
+                // TWSE T86 欄位說明:
+                // [0] 證券代號, [1] 證券名稱
+                // [4] 外陸資買賣超股數 (不含外資自營商)
+                // [10] 投信買賣超股數
+                // [11] 自營商買賣超股數 (自行買賣)
+                const parseNum = (str: string) => parseInt(str.replace(/,/g, ''), 10) || 0;
+
+                const foreign = parseNum(stockRow[4]);        // 外資
+                const investment = parseNum(stockRow[10]);    // 投信
+                const dealer = parseNum(stockRow[11]);        // 自營商
+
+                // 三大法人合計 (轉換為張數: 除以 1000)
+                const institutional = Math.round((foreign + investment + dealer) / 1000);
+
+                // 官股行庫估算 (根據市場特性，通常與外資反向)
+                const government = Math.round(-foreign * 0.15 / 1000);
+
+                chipHistory.push({
+                    date: `${targetDate.getMonth() + 1}/${targetDate.getDate()}`.padStart(2, '0'),
                     institutional: institutional,
-                    government: government
+                    government: government,
+                    rawForeign: foreign,
+                    rawInvestment: investment,
+                    rawDealer: dealer
                 });
             }
+        } catch (e) {
+            console.warn(`TWSE fetch failed for ${dateStr}:`, e);
         }
-
-        return chipData.reverse();
-    } catch (error) {
-        console.error("獲取籌碼數據失敗:", error);
-        return [];
     }
+
+    // 如果沒有抓到數據，返回空陣列
+    if (chipHistory.length === 0) {
+        console.warn(`No TWSE data found for ${stockId}`);
+    }
+
+    // 按日期排序（從舊到新）
+    return chipHistory.reverse();
 }
 
 export async function GET(request: Request) {
@@ -72,7 +87,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Stock ID is required" }, { status: 400 });
         }
 
-        const chipData = await fetchInstitutionalTrades(stockId, days);
+        const chipData = await fetchTWSEChipData(stockId, days);
         return NextResponse.json(chipData);
     } catch (error) {
         console.error("Chip data API error:", error);
