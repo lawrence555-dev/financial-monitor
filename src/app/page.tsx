@@ -59,6 +59,7 @@ export default function DashboardPage() {
     INITIAL_STOCKS.map(s => ({ ...s, data: [] as { value: number }[], chipData: [] as any[] }))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isChipLoading, setIsChipLoading] = useState(false);
