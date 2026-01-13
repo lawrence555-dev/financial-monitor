@@ -59,7 +59,7 @@ export default function DashboardPage() {
     INITIAL_STOCKS.map(s => ({ ...s, data: [] as { value: number }[], chipData: [] as any[] }))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isChipLoading, setIsChipLoading] = useState(false);
 
@@ -100,33 +100,29 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchIntradayHistory = async () => {
+      const intradayPromises = INITIAL_STOCKS.map(async (s) => {
+        try {
+          const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
+          const intraData = await intraRes.json();
+          return { id: s.id, history: intraData };
+        } catch (e) {
+          return { id: s.id, history: [] };
+        }
+      });
+      const allHistory = await Promise.all(intradayPromises);
+      setStocks(prev => prev.map(s => {
+        const historyItem = allHistory.find(h => h.id === s.id);
+        const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
+        return { ...s, data: history };
+      }));
+    };
+
     const initData = async () => {
       setMounted(true);
       try {
-        // 1. Fetch Real-time Current Prices First
         await fetchRealtimePrices();
-
-        // 2. Fetch Intraday History for all 13 stocks (Parallel)
-        const intradayPromises = INITIAL_STOCKS.map(async (s) => {
-          try {
-            const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
-            const intraData = await intraRes.json();
-            return { id: s.id, history: intraData };
-          } catch (e) {
-            return { id: s.id, history: [] };
-          }
-        });
-
-        const allHistory = await Promise.all(intradayPromises);
-
-        setStocks(prev => prev.map(s => {
-          const historyItem = allHistory.find(h => h.id === s.id);
-          const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
-          return {
-            ...s,
-            data: history
-          };
-        }));
+        await fetchIntradayHistory();
       } catch (e) {
         console.error("Initial data fetch failed.", e);
       }
@@ -134,9 +130,22 @@ export default function DashboardPage() {
 
     initData();
 
-    // 3. Set up Polling for Real-time Prices (Every 30 seconds during market hours)
-    const interval = setInterval(fetchRealtimePrices, 30000);
-    return () => clearInterval(interval);
+    // 實時更新系統時鐘 (每秒)
+    const clockInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // 實時價格輪詢 (每 30 秒)
+    const priceInterval = setInterval(fetchRealtimePrices, 30000);
+
+    // 線圖走勢輪詢 (每 5 分鐘)
+    const historyInterval = setInterval(fetchIntradayHistory, 300000);
+
+    return () => {
+      clearInterval(clockInterval);
+      clearInterval(priceInterval);
+      clearInterval(historyInterval);
+    };
   }, []);
 
   // Fetch AI Summary when selectedId changes
@@ -218,7 +227,7 @@ export default function DashboardPage() {
               {mounted && (
                 <p className="text-slate-400 text-sm font-bold flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rise animate-pulse" />
-                  市場即時數據監控中 · {new Date().toLocaleDateString('zh-TW')} {new Date().toLocaleTimeString('zh-TW')}
+                  市場即時數據監控中 · {currentTime.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false })} (台北時間)
                 </p>
               )}
             </div>

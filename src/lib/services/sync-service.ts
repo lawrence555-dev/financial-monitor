@@ -61,14 +61,23 @@ export async function performGlobalSync() {
             const diff = currentPrice - prevClose;
             const change = (diff / prevClose) * 100;
 
-            // 處理今日分時數據 (用於線圖)
+            // 處理今日分時數據 (僅顯示今日 09:00 以後的點位)
+            const todayStr = getTaiwanDate();
             const timeline = timestamps.map((ts: number, i: number) => {
                 const date = new Date(ts * 1000);
+                const itemDateStr = new Intl.DateTimeFormat('zh-TW', {
+                    timeZone: 'Asia/Taipei',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                }).format(date).replace(/\//g, '-');
+
                 return {
+                    dateStr: itemDateStr,
                     time: new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Taipei' }).format(date),
                     value: quotes[i] || null
                 };
-            }).filter((item: any) => item.value !== null);
+            }).filter((item: any) => item.value !== null && item.dateStr === todayStr);
 
             // 計算 P/B 位階 (簡單演算法)
             let pbPercentile = (parseInt(stock.id) % 60) + 20; // 預設值
