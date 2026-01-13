@@ -396,7 +396,7 @@ export default function DashboardPage() {
                         ))}%`
                       }} />
                     </div>
-                    <Link href="/subscription" className="w-full">
+                    <Link href={`/report/${selectedStock.id}`} className="w-full">
                       <button className="w-full py-4 bg-rise text-white rounded-xl font-black shadow-lg shadow-rise/20 hover:scale-[1.02] active:scale-95 transition-all">
                         查看完整詳細報告
                       </button>
