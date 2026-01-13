@@ -11,7 +11,13 @@ export async function GET(request: Request) {
             orderBy: { createdAt: "desc" }
         });
 
-        return NextResponse.json(scenarios);
+        // Serialization for BigInt
+        const serializedScenarios = scenarios.map(s => ({
+            ...s,
+            shares: Number(s.shares)
+        }));
+
+        return NextResponse.json(serializedScenarios);
     } catch (error) {
         console.error("Failed to fetch tax scenarios:", error);
         return NextResponse.json({ error: "Failed to fetch tax scenarios" }, { status: 500 });

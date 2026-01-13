@@ -172,7 +172,7 @@ export default function TaxPage() {
                                 財經終端：金控股息試算系統
                             </h1>
                             <p className="text-slate-500 text-sm font-bold">
-                                整合二代健保補充保費與所得稅抵減演算法 • {new Date().toLocaleDateString('zh-TW')}
+                                整合二代健保補充保費與所得稅抵減演算法 • {new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: true })} (台北時間)
                             </p>
                         </div>
                         <div className="flex gap-4">
