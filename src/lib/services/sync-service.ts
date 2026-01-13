@@ -50,6 +50,7 @@ export async function performGlobalSync() {
             const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=5m&range=1d`);
             if (!res.ok) continue;
 
+            const data = await res.json();
             const result = data.chart.result[0];
             const meta = result.meta;
             const timestamps = result.timestamp || [];
