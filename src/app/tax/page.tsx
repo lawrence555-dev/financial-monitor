@@ -21,7 +21,7 @@ const STOCKS_BASE = [
     { id: "2884", name: "玉山金", dividend: 1.5 },
     { id: "2885", name: "元大金", dividend: 1.5 },
     { id: "2886", name: "兆豐金", dividend: 1.8 },
-    { id: "2887", name: "台新金", dividend: 1.0 },
+    { id: "2887", name: "台新新光金", dividend: 1.0 },
     { id: "2889", name: "國票金", dividend: 0.7 },
     { id: "2890", name: "永豐金", dividend: 1.2 },
     { id: "2891", name: "中信金", dividend: 1.8 },

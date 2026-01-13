@@ -12,7 +12,7 @@ const FHC_STOCKS = [
     { id: "2884", name: "玉山金", category: "民營" },
     { id: "2885", name: "元大金", category: "民營" },
     { id: "2886", name: "兆豐金", category: "官股" },
-    { id: "2887", name: "台新金", category: "民營" },
+    { id: "2887", name: "台新新光金", category: "民營" },
     { id: "2889", name: "國票金", category: "民營" },
     { id: "2890", name: "永豐金", category: "民營" },
     { id: "2891", name: "中信金", category: "民營" },
