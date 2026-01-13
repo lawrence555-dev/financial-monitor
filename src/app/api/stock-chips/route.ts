@@ -1,14 +1,28 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+
+// 快取目錄
+const CACHE_DIR = path.join(process.cwd(), "public", "data", "chips");
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 小時
+
+// 確保快取目錄存在
+if (!fs.existsSync(CACHE_DIR)) {
+    fs.mkdirSync(CACHE_DIR, { recursive: true });
+}
 
 // 從 TWSE 抓取真實三大法人買賣超資料
-async function fetchTWSEChipData(stockId: string, days: number = 15) {
+async function fetchTWSEChipData(stockId: string, targetDays: number = 10) {
     const chipHistory: any[] = [];
     const today = new Date();
+    let daysChecked = 0;
+    let tradingDaysFound = 0;
 
-    // 獲取最近 N 個交易日的數據
-    for (let i = 0; i < days; i++) {
+    // 持續往前找，直到找到足夠的交易日
+    while (tradingDaysFound < targetDays && daysChecked < 30) {
         const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() - i);
+        targetDate.setDate(today.getDate() - daysChecked);
+        daysChecked++;
 
         // 跳過週末
         const dayOfWeek = targetDate.getDay();
@@ -23,7 +37,8 @@ async function fetchTWSEChipData(stockId: string, days: number = 15) {
                     headers: {
                         "User-Agent": "Mozilla/5.0",
                         "Accept": "application/json"
-                    }
+                    },
+                    next: { revalidate: 3600 } // Next.js 快取 1 小時
                 }
             );
 
@@ -55,13 +70,15 @@ async function fetchTWSEChipData(stockId: string, days: number = 15) {
                 const government = Math.round(-foreign * 0.15 / 1000);
 
                 chipHistory.push({
-                    date: `${targetDate.getMonth() + 1}/${targetDate.getDate()}`.padStart(2, '0'),
+                    date: `${targetDate.getMonth() + 1}/${targetDate.getDate()}`,
                     institutional: institutional,
                     government: government,
                     rawForeign: foreign,
                     rawInvestment: investment,
                     rawDealer: dealer
                 });
+
+                tradingDaysFound++;
             }
         } catch (e) {
             console.warn(`TWSE fetch failed for ${dateStr}:`, e);
@@ -81,13 +98,30 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const stockId = searchParams.get("id");
-        const days = parseInt(searchParams.get("days") || "15");
+        const days = parseInt(searchParams.get("days") || "10");
 
         if (!stockId) {
             return NextResponse.json({ error: "Stock ID is required" }, { status: 400 });
         }
 
+        // 檢查快取
+        const cacheFile = path.join(CACHE_DIR, `${stockId}_${days}.json`);
+        if (fs.existsSync(cacheFile)) {
+            const stats = fs.statSync(cacheFile);
+            const age = Date.now() - stats.mtimeMs;
+
+            if (age < CACHE_DURATION) {
+                const cached = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+                return NextResponse.json(cached);
+            }
+        }
+
+        // 抓取新數據
         const chipData = await fetchTWSEChipData(stockId, days);
+
+        // 寫入快取
+        fs.writeFileSync(cacheFile, JSON.stringify(chipData, null, 2));
+
         return NextResponse.json(chipData);
     } catch (error) {
         console.error("Chip data API error:", error);

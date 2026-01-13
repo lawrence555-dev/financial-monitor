@@ -176,8 +176,8 @@ export default function DashboardPage() {
       const fetchChipData = async () => {
         setIsChipLoading(true);
         try {
-          const res = await fetch(`/api/stock-chips?id=${selectedId}`);
-          const realChipData = await res.json();
+          const chipRes = await fetch(`/api/stock-chips?id=${selectedId}&days=10`);
+          const realChipData = await chipRes.json();
           if (Array.isArray(realChipData)) {
             setStocks(prev => prev.map(s =>
               s.id === selectedId ? { ...s, chipData: realChipData } : s
