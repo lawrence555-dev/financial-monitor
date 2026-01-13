@@ -109,7 +109,7 @@ export default function DashboardPage() {
         // 2. Fetch Intraday History for all 13 stocks (Parallel)
         const intradayPromises = INITIAL_STOCKS.map(async (s) => {
           try {
-            const intraRes = await fetch(`/api/stock-prices/intraday?id=${s.id}`);
+            const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
             const intraData = await intraRes.json();
             return { id: s.id, history: intraData };
           } catch (e) {
