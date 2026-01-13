@@ -311,7 +311,7 @@ export default function DashboardPage() {
                   <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
                     <div>
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        籌碼流向 (15D)
+                        籌碼流向 (10D)
                         {isChipLoading && <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" />}
                       </p>
                       <div className={cn("transition-opacity duration-300", isChipLoading ? "opacity-50" : "opacity-100")}>

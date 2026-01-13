@@ -52,8 +52,8 @@ export default function ReportPage() {
                 const stock = realtimeData.find((s: any) => s.id === stockId);
                 if (stock) setStockData(stock);
 
-                // 獲取籌碼數據
-                const chipRes = await fetch(`/api/stock-chips?id=${stockId}&days=15`);
+                // 獲取籌碼數據 (10 個交易日)
+                const chipRes = await fetch(`/api/stock-chips?id=${stockId}&days=10`);
                 const chipJson = await chipRes.json();
                 if (Array.isArray(chipJson)) setChipData(chipJson);
 
@@ -140,10 +140,29 @@ export default function ReportPage() {
                         <span className="font-bold">返回首頁</span>
                     </Link>
                     <div className="flex gap-3">
-                        <button className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        <button
+                            onClick={() => window.print()}
+                            className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+                            title="下載 PDF 報告"
+                        >
                             <Download size={18} />
                         </button>
-                        <button className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors">
+                        <button
+                            onClick={() => {
+                                if (navigator.share) {
+                                    navigator.share({
+                                        title: `${stockInfo.name} 詳細報告`,
+                                        text: `查看 ${stockInfo.name} 的完整投資分析報告`,
+                                        url: window.location.href
+                                    });
+                                } else {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert('連結已複製到剪貼簿！');
+                                }
+                            }}
+                            className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
+                            title="分享報告"
+                        >
                             <Share2 size={18} />
                         </button>
                     </div>
@@ -269,7 +288,7 @@ export default function ReportPage() {
 
                     {/* 籌碼流向 */}
                     <div className="p-5 glass bg-slate-900/50 rounded-xl border border-white/5">
-                        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">籌碼流向 (15D)</div>
+                        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">籌碼流向 (10D)</div>
                         <div className="h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chipData}>
