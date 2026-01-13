@@ -111,7 +111,7 @@ export async function performGlobalSync() {
                         },
                         update: { price: price }
                     });
-                }).filter(p => p !== null);
+                }).filter((p: any) => p !== null);
 
                 Promise.all(upsertPromises).catch(err => {
                     console.error(`[Global-Sync] DB Batch Upsert Failed for ${stock.id}:`, err);

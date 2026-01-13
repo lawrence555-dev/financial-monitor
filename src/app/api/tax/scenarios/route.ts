@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         });
 
         // Serialization for BigInt
-        const serializedScenarios = scenarios.map(s => ({
+        const serializedScenarios = scenarios.map((s: any) => ({
             ...s,
             shares: Number(s.shares)
         }));
