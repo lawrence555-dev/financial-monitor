@@ -127,8 +127,8 @@ export default function DashboardPage() {
     // 實時價格輪詢 (每 30 秒)
     const priceInterval = setInterval(fetchRealtimePrices, 30000);
 
-    // 線圖走勢輪詢 (每 5 分鐘)
-    const historyInterval = setInterval(fetchIntradayHistory, 300000);
+    // 線圖走勢輪詢 (每 2 分鐘) - 從 5 分鐘縮短為 2 分鐘
+    const historyInterval = setInterval(fetchIntradayHistory, 120000);
 
     // 圖表時間過濾更新 (每 1 分鐘) - 觸發 FhcCard 重新計算過濾後的數據
     const chartUpdateInterval = setInterval(() => {
@@ -136,11 +136,31 @@ export default function DashboardPage() {
       setStocks(prev => [...prev]);
     }, 60000);
 
+    // 收盤後額外同步 (13:32 執行一次) - 確保獲取完整收盤數據
+    const checkPostMarketSync = () => {
+      const now = new Date();
+      const taipeiTime = new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Taipei'
+      }).format(now);
+
+      // 在 13:32 執行一次額外同步
+      if (taipeiTime === '13:32') {
+        console.log('[Post-Market Sync] Fetching final closing data...');
+        fetchIntradayHistory();
+      }
+    };
+
+    const postMarketCheckInterval = setInterval(checkPostMarketSync, 60000); // 每分鐘檢查一次
+
     return () => {
       clearInterval(clockInterval);
       clearInterval(priceInterval);
       clearInterval(historyInterval);
       clearInterval(chartUpdateInterval);
+      clearInterval(postMarketCheckInterval);
     };
   }, []);
 
