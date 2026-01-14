@@ -24,9 +24,9 @@ export default function StockListItem({
     const chartData = data && data.length > 0 ? data.filter(d => d.value !== null) : [];
 
     return (
-        <div className="glass p-4 flex items-center gap-6 hover:bg-white/5 transition-all">
+        <div className="glass p-4 flex items-center gap-4 hover:bg-white/5 transition-all">
             {/* Left: Stock Info */}
-            <div className="flex items-center gap-3 min-w-[200px]">
+            <div className="flex items-center gap-3 min-w-[160px]">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-black text-slate-400 font-mono">{id}</span>
@@ -37,12 +37,12 @@ export default function StockListItem({
                             {category}
                         </span>
                     </div>
-                    <h3 className="text-lg font-black text-white tracking-tight">{name}</h3>
+                    <h3 className="text-base font-black text-white tracking-tight">{name}</h3>
                 </div>
             </div>
 
             {/* Middle: Mini Chart */}
-            <div className="flex-1 h-16 min-w-[200px]">
+            <div className="h-14 w-[180px]">
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
@@ -73,10 +73,10 @@ export default function StockListItem({
             </div>
 
             {/* Right: Price & Stats */}
-            <div className="flex items-center gap-8 min-w-[300px]">
+            <div className="flex items-center gap-6 ml-auto">
                 {/* Price */}
-                <div className="text-right">
-                    <div className="text-2xl font-black font-mono text-white tracking-tight">
+                <div className="text-right min-w-[140px]">
+                    <div className="text-xl font-black font-mono text-white tracking-tight">
                         {price > 0 ? price.toFixed(2) : '---'}
                     </div>
                     <div className={cn(
@@ -89,11 +89,11 @@ export default function StockListItem({
                 </div>
 
                 {/* P/B */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-[100px]">
                     <div className="text-right">
                         <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">P/B位階</p>
                         <p className={cn(
-                            "text-lg font-black font-mono",
+                            "text-base font-black font-mono",
                             pbPercentile < 20 ? "text-fall" : pbPercentile > 80 ? "text-rise" : "text-slate-300"
                         )}>
                             {pbPercentile}%
