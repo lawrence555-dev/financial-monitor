@@ -82,10 +82,8 @@ export default function FhcCard({
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -4 }}
             className={cn(
                 "glass group relative overflow-hidden p-5 transition-all duration-500",
-                "hover:glass-hover hover:shadow-2xl hover:shadow-rise/10",
                 isCheap && "after:absolute after:inset-0 after:rounded-[1rem] after:border-2 after:border-fall/30 after:animate-pulse"
             )}
         >

@@ -5,8 +5,9 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import TickerTape from "@/components/TickerTape";
 import FhcCard from "@/components/FhcCard";
+import StockListItem from "@/components/StockListItem";
 import ChipChart from "@/components/ChipChart";
-import { Search, Bell, Filter, X, TrendingUp, TrendingDown, BrainCircuit } from "lucide-react";
+import { Search, Bell, Filter, X, TrendingUp, TrendingDown, BrainCircuit, LayoutGrid, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/Toast";
@@ -52,6 +53,7 @@ export default function DashboardPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<"all" | "民營" | "官股">("all");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const selectedStock = stocks.find(s => s.id === selectedId);
 
@@ -164,6 +166,19 @@ export default function DashboardPage() {
     };
   }, []);
 
+  // Load view mode preference from localStorage
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem('viewMode');
+    if (savedViewMode === 'grid' || savedViewMode === 'list') {
+      setViewMode(savedViewMode);
+    }
+  }, []);
+
+  // Save view mode preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('viewMode', viewMode);
+  }, [viewMode]);
+
   // Fetch AI Summary when selectedId changes
   useEffect(() => {
     if (selectedId && selectedStock) {
@@ -273,6 +288,28 @@ export default function DashboardPage() {
                   </button>
                 ))}
               </div>
+              <div className="flex bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={cn(
+                    "p-2 rounded-xl transition-all",
+                    viewMode === 'grid' ? "bg-white/10 text-white" : "text-slate-500 hover:text-white"
+                  )}
+                  title="網格模式"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "p-2 rounded-xl transition-all",
+                    viewMode === 'list' ? "bg-white/10 text-white" : "text-slate-500 hover:text-white"
+                  )}
+                  title="列表模式"
+                >
+                  <List size={18} />
+                </button>
+              </div>
               <button
                 onClick={() => showToast("通知功能已啟動：當價值警報觸發時，系統將自動推播。", "success")}
                 className="p-3 glass hover:glass-hover text-slate-400 hover:text-white transition-all relative"
@@ -284,19 +321,39 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            {/* 13-Grid Regions */}
+            {/* Stock Display Area */}
             <div className={cn(
-              "grid gap-6 transition-all duration-500",
-              selectedId ? "xl:col-span-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "xl:col-span-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+              "transition-all duration-500",
+              selectedId ? "xl:col-span-8" : "xl:col-span-12"
             )}>
-              {filteredStocks.map((stock) => (
-                <div key={stock.id} onClick={() => setSelectedId(stock.id === selectedId ? null : stock.id)} className="cursor-pointer">
-                  <FhcCard
-                    {...stock}
-                    pbPercentile={stock.pbPercentile}
-                  />
+              {viewMode === 'grid' ? (
+                // Grid Mode
+                <div className={cn(
+                  "grid gap-6",
+                  selectedId ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+                )}>
+                  {filteredStocks.map((stock) => (
+                    <div key={stock.id} onClick={() => setSelectedId(stock.id === selectedId ? null : stock.id)} className="cursor-pointer">
+                      <FhcCard
+                        {...stock}
+                        pbPercentile={stock.pbPercentile}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                // List Mode
+                <div className="flex flex-col gap-4">
+                  {filteredStocks.map((stock) => (
+                    <div key={stock.id} onClick={() => setSelectedId(stock.id === selectedId ? null : stock.id)} className="cursor-pointer">
+                      <StockListItem
+                        {...stock}
+                        pbPercentile={stock.pbPercentile}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {!selectedId && (
                 <div className="glass bg-gradient-to-br from-rise/10 to-transparent border-rise/20 p-8 flex flex-col justify-center items-center text-center group cursor-pointer hover:border-rise transition-all">
