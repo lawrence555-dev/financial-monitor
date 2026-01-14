@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip } from "recharts";
+import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis, Tooltip } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
@@ -25,7 +25,7 @@ export default function FhcCard({
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
 
-    // Filter data to only show points up to current time (台北時間)
+    // Filter data to only show trading hours (9:00-13:30) and up to current time
     const filteredData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
@@ -42,14 +42,20 @@ export default function FhcCard({
         const [currentHour, currentMinute] = taipeiTime.split(':').map(Number);
         const currentMinutes = currentHour * 60 + currentMinute;
 
-        // Filter data points that are before or equal to current time
+        // Trading hours: 9:00 (540 min) to 13:30 (810 min)
+        const tradingStart = 9 * 60; // 540
+        const tradingEnd = 13 * 60 + 30; // 810
+
+        // Filter data points within trading hours and up to current time
         return data.filter(point => {
-            if (!point.time) return true; // Keep points without time info
+            if (!point.time) return false; // Exclude points without time info
 
             const [hour, minute] = point.time.split(':').map(Number);
             const pointMinutes = hour * 60 + minute;
 
-            return pointMinutes <= currentMinutes;
+            // Only show points within trading hours and up to current time
+            return pointMinutes >= tradingStart &&
+                pointMinutes <= Math.min(currentMinutes, tradingEnd);
         });
     }, [data]);
 
@@ -103,6 +109,14 @@ export default function FhcCard({
                                     <stop offset="95%" stopColor={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
+                            <XAxis
+                                dataKey="time"
+                                tick={{ fill: '#475569', fontSize: 9, fontWeight: 'bold' }}
+                                tickLine={false}
+                                axisLine={{ stroke: 'rgba(255,255,255,0.05)' }}
+                                interval="preserveStartEnd"
+                                ticks={['09:00', '11:00', '13:30']}
+                            />
                             <YAxis hide domain={['dataMin - 0.2', 'dataMax + 0.2']} />
                             <Tooltip
                                 trigger="hover"
@@ -114,7 +128,7 @@ export default function FhcCard({
                                                     {Number(payload[0].value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </p>
                                                 <p className="text-[8px] font-bold text-slate-500 uppercase px-1">
-                                                    即時報價
+                                                    {payload[0].payload.time}
                                                 </p>
                                             </div>
                                         );
