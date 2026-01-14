@@ -87,10 +87,12 @@ export async function performGlobalSync() {
             try {
                 // 獲取財務數據 (包含 Book Value)
                 const statsRes = await fetch(`https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=defaultKeyStatistics,summaryDetail`);
+                console.log(`[PB API] ${stock.id} - HTTP Status: ${statsRes.status}`);
                 if (statsRes.ok) {
                     const statsData = await statsRes.json();
                     const keyStats = statsData.quoteSummary?.result?.[0]?.defaultKeyStatistics;
                     const bookValue = keyStats?.bookValue?.raw || keyStats?.priceToBook?.raw;
+                    console.log(`[PB Data] ${stock.id} - bookValue: ${bookValue}, keyStats:`, keyStats);
 
                     if (bookValue && bookValue > 0) {
                         const realPB = currentPrice / bookValue;
@@ -110,7 +112,12 @@ export async function performGlobalSync() {
                         } else {
                             pbPercentile = Math.min(100, Math.round(85 + (realPB - 2.0) * 15));
                         }
+                        console.log(`[PB Calculated] ${stock.id} - P/B: ${pbValue}, Percentile: ${pbPercentile}%`);
+                    } else {
+                        console.warn(`[PB Data] ${stock.id} - No valid bookValue found`);
                     }
+                } else {
+                    console.error(`[PB API] ${stock.id} - HTTP ${statsRes.status}: ${statsRes.statusText}`);
                 }
             } catch (e) {
                 console.warn(`[PB Calculation] Failed for ${stock.id}:`, e);

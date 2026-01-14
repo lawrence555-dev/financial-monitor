@@ -179,6 +179,65 @@ export default function DashboardPage() {
     localStorage.setItem('viewMode', viewMode);
   }, [viewMode]);
 
+  // Data backfill: Check for missing 13:30 data after market close
+  useEffect(() => {
+    const checkAndBackfillData = async () => {
+      const now = new Date();
+      const taipeiTime = new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Taipei'
+      }).format(now);
+
+      const [hour, minute] = taipeiTime.split(':').map(Number);
+      const currentMinutes = hour * 60 + minute;
+
+      // Only check if time is past 13:35 (post-market sync time)
+      if (currentMinutes >= 13 * 60 + 35) {
+        // Check if any stock is missing 13:30 data
+        const needsBackfill = stocks.some(stock => {
+          if (stock.data.length === 0) return false;
+
+          const lastDataPoint = stock.data[stock.data.length - 1];
+          if (!lastDataPoint.time) return false;
+
+          // Check if last data point is before 13:30
+          const [lastHour, lastMinute] = lastDataPoint.time.split(':').map(Number);
+          const lastMinutes = lastHour * 60 + lastMinute;
+          const marketCloseMinutes = 13 * 60 + 30; // 13:30
+
+          return lastMinutes < marketCloseMinutes;
+        });
+
+        if (needsBackfill) {
+          console.log('[Backfill] Missing 13:30 data detected, fetching...');
+          // Directly fetch intraday data
+          const intradayPromises = STOCK_IDS.map(async (s) => {
+            try {
+              const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
+              const intraData = await intraRes.json();
+              return { id: s.id, history: intraData };
+            } catch (e) {
+              return { id: s.id, history: [] };
+            }
+          });
+          const allHistory = await Promise.all(intradayPromises);
+          setStocks(prev => prev.map(s => {
+            const historyItem = allHistory.find(h => h.id === s.id);
+            const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
+            return { ...s, data: history };
+          }));
+        }
+      }
+    };
+
+    // Check once when stocks data changes
+    if (stocks.length > 0 && stocks[0].data.length > 0) {
+      checkAndBackfillData();
+    }
+  }, [stocks]);
+
   // Fetch AI Summary when selectedId changes
   useEffect(() => {
     if (selectedId && selectedStock) {
