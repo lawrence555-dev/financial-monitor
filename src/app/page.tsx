@@ -64,14 +64,20 @@ export default function DashboardPage() {
     return matchesSearch && matchesFilter;
   });
 
-  // Handle stock click with scroll to top in grid mode
-  const handleStockClick = (stockId: string) => {
+  // Handle stock click with scroll to align detail panel
+  const handleStockClick = (stockId: string, event: React.MouseEvent) => {
     const newSelectedId = stockId === selectedId ? null : stockId;
     setSelectedId(newSelectedId);
 
-    // Scroll to top when selecting a stock in grid mode to show detail panel
+    // Scroll the clicked card into view in grid mode to align with detail panel
     if (newSelectedId && viewMode === 'grid') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const clickedElement = event.currentTarget as HTMLElement;
+      setTimeout(() => {
+        clickedElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
     }
   };
 
@@ -406,7 +412,7 @@ export default function DashboardPage() {
                   selectedId ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
                 )}>
                   {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
+                    <div key={stock.id} onClick={(e) => handleStockClick(stock.id, e)} className="cursor-pointer">
                       <FhcCard
                         {...stock}
                         pbPercentile={stock.pbPercentile}
@@ -418,7 +424,7 @@ export default function DashboardPage() {
                 // List Mode
                 <div className="flex flex-col gap-4">
                   {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
+                    <div key={stock.id} onClick={(e) => handleStockClick(stock.id, e)} className="cursor-pointer">
                       <StockListItem
                         {...stock}
                         pbPercentile={stock.pbPercentile}
