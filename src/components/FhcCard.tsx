@@ -25,7 +25,7 @@ export default function FhcCard({
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
 
-    // Create complete time series from 9:00 to 13:30 with data up to current time
+    // Prepare chart data: only real data from API, with full X-axis range
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
@@ -41,31 +41,36 @@ export default function FhcCard({
         const [currentHour, currentMinute] = taipeiTime.split(':').map(Number);
         const currentMinutes = currentHour * 60 + currentMinute;
 
-        // Create a map of existing data points
+        // Trading hours: 9:00 (540 min) to 13:30 (810 min)
+        const tradingStart = 9 * 60; // 540
+        const tradingEnd = 13 * 60 + 30; // 810
+
+        // Filter data within trading hours only (real data from API)
+        const tradingData = data.filter(point => {
+            if (!point.time) return false;
+            const [hour, minute] = point.time.split(':').map(Number);
+            const pointMinutes = hour * 60 + minute;
+            return pointMinutes >= tradingStart && pointMinutes <= tradingEnd;
+        });
+
+        // Create complete time series with real data and null for missing/future times
+        const completeTimeSeries: { time: string; value: number | null }[] = [];
         const dataMap = new Map<string, number>();
-        data.forEach(point => {
+
+        tradingData.forEach(point => {
             if (point.time) {
                 dataMap.set(point.time, point.value);
             }
         });
 
-        // Generate complete time series from 9:00 to 13:30 (every 5 minutes)
-        const completeTimeSeries: { time: string; value: number | null }[] = [];
-        const tradingStart = 9 * 60; // 9:00 = 540 minutes
-        const tradingEnd = 13 * 60 + 30; // 13:30 = 810 minutes
-
+        // Generate all time slots from 9:00 to 13:30 (every 5 minutes)
         for (let minutes = tradingStart; minutes <= tradingEnd; minutes += 5) {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
             const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 
-            // If this time is in the future, set value to null
-            // If this time has data, use it; otherwise interpolate or set to null
-            let value: number | null = null;
-
-            if (minutes <= currentMinutes) {
-                value = dataMap.get(timeStr) ?? null;
-            }
+            // Only use real data from API, no forward fill
+            const value = dataMap.get(timeStr) ?? null;
 
             completeTimeSeries.push({ time: timeStr, value });
         }
