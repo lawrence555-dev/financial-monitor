@@ -64,21 +64,9 @@ export default function DashboardPage() {
     return matchesSearch && matchesFilter;
   });
 
-  // Handle stock click with scroll to align detail panel
-  const handleStockClick = (stockId: string, event: React.MouseEvent) => {
-    const newSelectedId = stockId === selectedId ? null : stockId;
-    setSelectedId(newSelectedId);
-
-    // Scroll the clicked card into view in grid mode to align with detail panel
-    if (newSelectedId && viewMode === 'grid') {
-      const clickedElement = event.currentTarget as HTMLElement;
-      setTimeout(() => {
-        clickedElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100);
-    }
+  // Handle stock click
+  const handleStockClick = (stockId: string) => {
+    setSelectedId(stockId === selectedId ? null : stockId);
   };
 
   useEffect(() => {
@@ -412,7 +400,7 @@ export default function DashboardPage() {
                   selectedId ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
                 )}>
                   {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={(e) => handleStockClick(stock.id, e)} className="cursor-pointer">
+                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
                       <FhcCard
                         {...stock}
                         pbPercentile={stock.pbPercentile}
@@ -424,7 +412,7 @@ export default function DashboardPage() {
                 // List Mode
                 <div className="flex flex-col gap-4">
                   {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={(e) => handleStockClick(stock.id, e)} className="cursor-pointer">
+                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
                       <StockListItem
                         {...stock}
                         pbPercentile={stock.pbPercentile}
@@ -459,7 +447,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 50 }}
-                  className="xl:col-span-4 glass border-white/10 bg-slate-900/60 p-8 flex flex-col gap-8"
+                  className="xl:col-span-4 glass border-white/10 bg-slate-900/60 p-8 flex flex-col gap-8 sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto"
                 >
                   <div className="flex justify-between items-start">
                     <div>
