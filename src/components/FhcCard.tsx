@@ -25,8 +25,8 @@ export default function FhcCard({
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
 
-    // Filter data to only show trading hours (9:00-13:30) and up to current time
-    const filteredData = useMemo(() => {
+    // Prepare chart data: show full trading session (9:00-13:30) with data up to current time
+    const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
         // Get current time in Taipei timezone
@@ -38,7 +38,7 @@ export default function FhcCard({
             timeZone: 'Asia/Taipei'
         }).format(now);
 
-        // Convert current time to minutes since midnight for comparison
+        // Convert current time to minutes since midnight
         const [currentHour, currentMinute] = taipeiTime.split(':').map(Number);
         const currentMinutes = currentHour * 60 + currentMinute;
 
@@ -46,17 +46,26 @@ export default function FhcCard({
         const tradingStart = 9 * 60; // 540
         const tradingEnd = 13 * 60 + 30; // 810
 
-        // Filter data points within trading hours and up to current time
-        return data.filter(point => {
-            if (!point.time) return false; // Exclude points without time info
-
+        // Filter actual data within trading hours
+        const tradingData = data.filter(point => {
+            if (!point.time) return false;
             const [hour, minute] = point.time.split(':').map(Number);
             const pointMinutes = hour * 60 + minute;
-
-            // Only show points within trading hours and up to current time
-            return pointMinutes >= tradingStart &&
-                pointMinutes <= Math.min(currentMinutes, tradingEnd);
+            return pointMinutes >= tradingStart && pointMinutes <= tradingEnd;
         });
+
+        // Create complete data with null values for future times
+        const completeData = tradingData.map(point => {
+            const [hour, minute] = point.time!.split(':').map(Number);
+            const pointMinutes = hour * 60 + minute;
+
+            return {
+                time: point.time,
+                value: pointMinutes <= currentMinutes ? point.value : null
+            };
+        });
+
+        return completeData;
     }, [data]);
 
     return (
@@ -100,9 +109,9 @@ export default function FhcCard({
             </div>
 
             <div className="h-20 w-full mb-4">
-                {filteredData && filteredData.length > 0 ? (
+                {chartData && chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={filteredData}>
+                        <AreaChart data={chartData}>
                             <defs>
                                 <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"} stopOpacity={0.3} />
@@ -115,7 +124,7 @@ export default function FhcCard({
                                 tickLine={false}
                                 axisLine={{ stroke: 'rgba(255,255,255,0.05)' }}
                                 interval="preserveStartEnd"
-                                ticks={['09:00', '11:00', '13:30']}
+                                domain={['09:00', '13:30']}
                             />
                             <YAxis hide domain={['dataMin - 0.2', 'dataMax + 0.2']} />
                             <Tooltip
