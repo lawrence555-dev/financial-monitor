@@ -42,7 +42,7 @@ export default function StockListItem({
             </div>
 
             {/* Middle: Compact Chart */}
-            <div className="h-12 w-[200px]">
+            <div className="h-12 w-[280px]">
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>

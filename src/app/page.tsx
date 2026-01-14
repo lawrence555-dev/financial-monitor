@@ -383,7 +383,10 @@ export default function DashboardPage() {
             {/* Stock Display Area */}
             <div className={cn(
               "transition-all duration-500",
-              selectedId ? "xl:col-span-8" : "xl:col-span-12"
+              // List mode: always full width, Grid mode: responsive based on selection
+              viewMode === 'list'
+                ? "xl:col-span-12"
+                : (selectedId ? "xl:col-span-8" : "xl:col-span-12")
             )}>
               {viewMode === 'grid' ? (
                 // Grid Mode
@@ -434,7 +437,7 @@ export default function DashboardPage() {
 
             {/* Selected Stock Detail Panel (Multi-Chart Linkage) */}
             <AnimatePresence>
-              {selectedId && selectedStock && (
+              {selectedId && selectedStock && viewMode === 'grid' && (
                 <motion.div
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
