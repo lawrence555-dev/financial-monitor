@@ -161,7 +161,7 @@ export default function FhcCard({
                                 fill={`url(#gradient-${id})`}
                                 isAnimationActive={true}
                                 animationDuration={1500}
-                                connectNulls={false}
+                                connectNulls={true}
                             />
                         </AreaChart>
                     </ResponsiveContainer>

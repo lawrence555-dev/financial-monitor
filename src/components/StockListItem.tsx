@@ -61,7 +61,7 @@ export default function StockListItem({
                                 fillOpacity={1}
                                 fill={`url(#list-gradient-${id})`}
                                 isAnimationActive={false}
-                                connectNulls={false}
+                                connectNulls={true}
                             />
                         </AreaChart>
                     </ResponsiveContainer>
