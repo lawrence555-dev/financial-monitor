@@ -130,10 +130,17 @@ export default function DashboardPage() {
     // 線圖走勢輪詢 (每 5 分鐘)
     const historyInterval = setInterval(fetchIntradayHistory, 300000);
 
+    // 圖表時間過濾更新 (每 1 分鐘) - 觸發 FhcCard 重新計算過濾後的數據
+    const chartUpdateInterval = setInterval(() => {
+      // Force re-render by updating a state that FhcCard depends on
+      setStocks(prev => [...prev]);
+    }, 60000);
+
     return () => {
       clearInterval(clockInterval);
       clearInterval(priceInterval);
       clearInterval(historyInterval);
+      clearInterval(chartUpdateInterval);
     };
   }, []);
 

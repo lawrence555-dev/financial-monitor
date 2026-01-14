@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 interface FhcCardProps {
     id: string;
@@ -15,7 +16,7 @@ interface FhcCardProps {
     category: "官股" | "民營";
     pbValue: number; // P/B Ratio
     pbPercentile: number; // 0-100, where low is cheap
-    data: { value: number }[];
+    data: { time?: string; value: number }[];
 }
 
 export default function FhcCard({
@@ -23,6 +24,34 @@ export default function FhcCard({
 }: FhcCardProps) {
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
+
+    // Filter data to only show points up to current time (台北時間)
+    const filteredData = useMemo(() => {
+        if (!data || data.length === 0) return [];
+
+        // Get current time in Taipei timezone
+        const now = new Date();
+        const taipeiTime = new Intl.DateTimeFormat('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Taipei'
+        }).format(now);
+
+        // Convert current time to minutes since midnight for comparison
+        const [currentHour, currentMinute] = taipeiTime.split(':').map(Number);
+        const currentMinutes = currentHour * 60 + currentMinute;
+
+        // Filter data points that are before or equal to current time
+        return data.filter(point => {
+            if (!point.time) return true; // Keep points without time info
+
+            const [hour, minute] = point.time.split(':').map(Number);
+            const pointMinutes = hour * 60 + minute;
+
+            return pointMinutes <= currentMinutes;
+        });
+    }, [data]);
 
     return (
         <motion.div
@@ -65,9 +94,9 @@ export default function FhcCard({
             </div>
 
             <div className="h-20 w-full mb-4">
-                {data && data.length > 0 ? (
+                {filteredData && filteredData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data}>
+                        <AreaChart data={filteredData}>
                             <defs>
                                 <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={change > 0 ? "#ef4444" : change < 0 ? "#22c55e" : "#94a3b8"} stopOpacity={0.3} />
