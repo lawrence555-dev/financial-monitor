@@ -388,10 +388,10 @@ export default function DashboardPage() {
             {/* Stock Display Area */}
             <div className={cn(
               "transition-all duration-500",
-              // List mode: always full width, Grid mode: responsive based on selection
+              // List mode: always full width, Grid mode: add padding for fixed panel
               viewMode === 'list'
                 ? "xl:col-span-12"
-                : (selectedId ? "xl:col-span-8" : "xl:col-span-12")
+                : (selectedId ? "xl:col-span-12 xl:pr-[420px]" : "xl:col-span-12")
             )}>
               {viewMode === 'grid' ? (
                 // Grid Mode
@@ -447,7 +447,7 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 50 }}
-                  className="xl:col-span-4 glass border-white/10 bg-slate-900/60 p-8 flex flex-col gap-8 sticky top-0 max-h-screen overflow-y-auto"
+                  className="fixed right-0 top-0 w-[400px] h-screen glass border-white/10 bg-slate-900/60 p-8 flex flex-col gap-8 overflow-y-auto z-40"
                 >
                   <div className="flex justify-between items-start">
                     <div>
