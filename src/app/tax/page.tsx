@@ -86,6 +86,7 @@ export default function TaxPage() {
                 shares: safeShares,
                 price: safePrice,
                 cashDividend: safeDividend,
+                stockDividend: selectedStock.stockDividend || 0, // 新增：保存配股資訊
                 totalDividend: safeTotalDividend,
                 netDividend: safeNetDividend,
                 nhiPremium: safeNhiPremium,
@@ -150,10 +151,15 @@ export default function TaxPage() {
     const netCash = totalCash - nhiPremium;
 
     // 總投資收益 (含配股市值)：淨現金 + (配發股數 * 當前股價)
-    const totalStockMarketValue = (shares || 0) * (selectedStock.stockDividend || 0) / 10 * (selectedStock.price || 10);
+    const totalStockMarketValue = (shares > 0 && selectedStock.price > 0)
+        ? (shares * (selectedStock.stockDividend || 0) / 10 * selectedStock.price)
+        : 0;
     const totalDividend = netCash + totalStockMarketValue;
 
-    const dividendYield = selectedStock.price > 0 ? ((selectedStock.cashDividend + selectedStock.stockDividend) / selectedStock.price) * 100 : 0;
+    // 修正：殖利率計算應基於當前股價，且排除 0 價情形
+    const dividendYield = (selectedStock.price > 0 && shares > 0)
+        ? (totalDividend / (shares * selectedStock.price)) * 100
+        : 0;
 
     // 所得稅負擔
     const incomeTaxBurden = taxableDividend * userTaxRate;
@@ -437,9 +443,9 @@ export default function TaxPage() {
                                                                 <span className="text-[9px] block text-slate-600 font-bold uppercase mb-0.5">實質殖利率</span>
                                                                 <span className={cn(
                                                                     "text-sm font-black font-mono",
-                                                                    effYield > dividendYield ? "text-emerald-400" : "text-slate-400"
+                                                                    effYield > (selectedStock.cashDividend / selectedStock.price * 100) ? "text-emerald-400" : "text-slate-400"
                                                                 )}>
-                                                                    {effYield.toFixed(2)}%
+                                                                    {selectedStock.price > 0 ? effYield.toFixed(2) : "0.00"}%
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -513,52 +519,76 @@ export default function TaxPage() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {scenarios.map((s, idx) => (
-                                    <motion.div
-                                        key={s.id}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="glass p-5 bg-black/40 border-white/5 relative group hover:border-white/20 transition-all ring-1 ring-white/5"
-                                    >
-                                        <button
-                                            onClick={() => handleDeleteScenario(s.id)}
-                                            className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1.5 text-slate-600 hover:text-rose-500 transition-all bg-white/5 rounded-lg"
+                                {scenarios.map((s, idx) => {
+                                    const sharesNum = Number(s.shares || 0);
+                                    const yieldVal = (s.price > 0 && sharesNum > 0)
+                                        ? (s.totalDividend / (sharesNum * s.price)) * 100
+                                        : 0;
+
+                                    return (
+                                        <motion.div
+                                            key={s.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="glass p-5 bg-black/40 border-white/5 relative group hover:border-white/20 transition-all ring-1 ring-white/5 overflow-hidden"
                                         >
-                                            <RotateCcw size={12} className="rotate-45" />
-                                        </button>
-                                        <div className="mb-4">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <h4 className="text-lg font-black text-white">{s.stockName}</h4>
-                                                <span className="text-[10px] font-black text-rise font-mono">{(s.dividend / (s.price || 1) * 100).toFixed(1)}%</span>
+                                            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-60" />
+
+                                            <button
+                                                onClick={() => handleDeleteScenario(s.id)}
+                                                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1.5 text-slate-600 hover:text-rose-500 transition-all bg-white/5 rounded-lg z-20"
+                                            >
+                                                <RotateCcw size={12} className="rotate-45" />
+                                            </button>
+
+                                            <div className="mb-4">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <h4 className="text-lg font-black text-white">{s.stockName}</h4>
+                                                    <span className="text-[10px] font-black text-emerald-400 font-mono italic">
+                                                        {yieldVal.toFixed(2)}% Yield
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-[10px] font-black text-slate-600 font-mono">#{s.stockId}</span>
+                                                    <span className="text-[10px] font-black text-slate-400">{(sharesNum / 1000).toFixed(0)} 張</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-[10px] font-black text-slate-600 font-mono italic">#{s.stockId}</span>
-                                                <span className="text-[10px] font-black text-slate-400">{((s.shares || 0) / 1000).toFixed(0)}張</span>
+
+                                            <div className="space-y-3 py-4 border-y border-white/5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[10px] font-black text-slate-600 uppercase">現金股利 (淨)</span>
+                                                    <span className="text-sm font-black text-white font-mono">{formatCurrency(s.netDividend)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[10px] font-black text-slate-600 uppercase">股票股利</span>
+                                                    <span className="text-sm font-black text-blue-400 font-mono">+{s.stockDividend?.toFixed(2) || "0.00"}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                                    <span className="text-[11px] font-black text-slate-400 uppercase">綜合總獲利</span>
+                                                    <span className="text-lg font-black text-rise font-mono">{formatCurrency(s.totalDividend)}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="space-y-2 py-3 border-y border-white/5">
-                                            <div className="flex justify-between text-[11px] font-bold">
-                                                <span className="text-slate-600">應納稅基</span>
-                                                <span className="text-white font-mono">{formatCurrency(s.totalDividend)}</span>
+
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div>
+                                                    <span className="text-[9px] block text-slate-600 font-black mb-1 uppercase">二代健保</span>
+                                                    <span className={cn("text-xs font-bold font-mono", s.nhiPremium > 0 ? "text-rose-500" : "text-emerald-500")}>
+                                                        {s.nhiPremium > 0 ? `-${formatCurrency(s.nhiPremium)}` : "免扣"}
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-[9px] block text-slate-600 font-black mb-1 uppercase">節稅評級</span>
+                                                    <span className={cn(
+                                                        "text-[10px] font-black px-2 py-0.5 rounded-full ring-1",
+                                                        s.taxCredit > s.totalDividend * 0.05 ? "text-emerald-400 ring-emerald-500/30 bg-emerald-500/10" : "text-slate-400 ring-white/10"
+                                                    )}>
+                                                        {s.taxCredit > s.totalDividend * 0.05 ? "High Efficiency" : "Standard"}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between text-[11px] font-bold">
-                                                <span className="text-slate-600">現金進帳</span>
-                                                <span className="text-rise font-mono">{formatCurrency(s.netDividend)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="mt-4">
-                                            <div className="flex justify-between items-center mb-1.5">
-                                                <span className="text-[9px] font-black text-slate-600 uppercase">避稅評級</span>
-                                                <span className={cn("text-[9px] font-black", s.nhiPremium > 0 ? "text-rose-500" : "text-emerald-500")}>
-                                                    {s.nhiPremium > 0 ? "TIER C" : "TIER A+"}
-                                                </span>
-                                            </div>
-                                            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                                <div className={cn("h-full", s.nhiPremium > 0 ? "bg-rose-500 w-[30%]" : "bg-emerald-500 w-full")} />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                        </motion.div>
+                                    );
+                                })}
                                 {scenarios.length < 5 && (
                                     <div className="glass border border-dashed border-white/5 flex items-center justify-center opacity-30 min-h-[180px]">
                                         <div className="text-center p-6">

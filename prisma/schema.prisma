@@ -78,7 +78,8 @@ model TaxScenario {
   stockName     String
   shares        BigInt
   price         Float
-  dividend      Float
+  dividend      Float    // 現金股利
+  stockDividend Float    @default(0) // 配股
   totalDividend Float
   netDividend   Float
   nhiPremium    Float

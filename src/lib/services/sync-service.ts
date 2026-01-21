@@ -74,20 +74,16 @@ export async function performGlobalSync() {
                 const realPB = currentPrice / estimatedBookValue;
                 pbValue = Number(realPB.toFixed(2));
 
-                // 簡化的位階計算：假設正常 P/B 範圍為 0.8 - 2.5
-                // 低於 1.0 = 便宜（0-30%）
-                // 1.0-1.5 = 合理（30-60%）  
-                // 1.5-2.0 = 偏貴（60-85%）
-                // 高於 2.0 = 昂貴（85-100%）
-                if (realPB < 1.0) {
-                    pbPercentile = Math.round(realPB * 30);
-                } else if (realPB < 1.5) {
-                    pbPercentile = Math.round(30 + (realPB - 1.0) * 60);
-                } else if (realPB < 2.0) {
-                    pbPercentile = Math.round(60 + (realPB - 1.5) * 50);
-                } else {
-                    pbPercentile = Math.min(100, Math.round(85 + (realPB - 2.0) * 15));
-                }
+                // 核心會計審計：計算 5 年歷史位階 Percentile
+                // 公式: (當前 P/B - 5年最低) / (5年最高 - 5年最低)
+                const minPb = stock.minPb || 0.8;
+                const maxPb = stock.maxPb || 2.2;
+
+                const range = maxPb - minPb;
+                const rawPercentile = ((realPB - minPb) / range) * 100;
+                pbPercentile = Math.max(0, Math.min(100, Math.round(rawPercentile)));
+
+                console.log(`[PB Audit] ${stock.id} - Price: ${currentPrice}, BookValue: ${estimatedBookValue}, P/B: ${pbValue}, Stats: [${minPb}-${maxPb}], Result: ${pbPercentile}%`);
                 console.log(`[PB Estimated] ${stock.id} - Price: ${currentPrice}, BookValue: ${estimatedBookValue}, P/B: ${pbValue}, Percentile: ${pbPercentile}%`);
             } else {
                 console.warn(`[PB Estimation] ${stock.id} - No estimated book value available`);
