@@ -7,8 +7,8 @@
   --color-fall: #10b981;
   --color-accent: var(--accent);
 
-  --font-archivo: 'IBM Plex Sans', sans-serif;
-  --font-space: 'IBM Plex Sans', sans-serif;
+  --font-archivo: var(--font-plex), sans-serif;
+  --font-space: var(--font-plex), sans-serif;
   --font-fira: 'Fira Code', monospace;
 
   /* Semantic Transitions */
@@ -20,14 +20,14 @@
   --bg: #020617;
   --fg: #f1f5f9;
   --fg-mute: #64748b;
-  --accent: #38bdf8;
-  /* Refined Sky Blue */
+  --accent: #f59e0b;
+  /* Elite Amber */
   --border: rgba(255, 255, 255, 0.06);
   --glass-bg: rgba(7, 10, 25, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-hover: rgba(255, 255, 255, 0.03);
   --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  --glow: rgba(56, 189, 248, 0.15);
+  --glow: rgba(245, 158, 11, 0.15);
 }
 
 body {

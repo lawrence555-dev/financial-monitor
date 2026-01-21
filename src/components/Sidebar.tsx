@@ -43,7 +43,7 @@ export default function Sidebar() {
                             </span>
                             {isActive && (
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 whitespace-nowrap">
-                                    <div className="w-1.5 h-7 bg-accent rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
+                                    <div className="w-1.5 h-7 bg-accent rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
                                 </div>
                             )}
                         </Link>
@@ -51,8 +51,12 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="mt-auto flex flex-col items-center gap-6 pb-4">
-                <div className="p-3.5 text-mute opacity-50">
+            <div className="mt-auto flex flex-col items-center gap-6 pb-6">
+                <div className="flex flex-col items-center opacity-30">
+                    <ShieldCheck size={18} className="text-accent mb-1" />
+                    <span className="text-[8px] font-black tracking-widest text-white uppercase">Secured</span>
+                </div>
+                <div className="p-3.5 text-mute opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
                     <Settings size={22} />
                 </div>
             </div>
