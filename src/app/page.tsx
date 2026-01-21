@@ -47,6 +47,7 @@ export default function DashboardPage() {
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [lastSyncTime, setLastSyncTime] = useState<string>("");
   const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -76,7 +77,13 @@ export default function DashboardPage() {
     const fetchRealtimePrices = async () => {
       try {
         const res = await fetch("/api/stock-prices/realtime");
-        const realData = await res.json();
+        const rawData = await res.json();
+
+        // Handle both object with stocks/lastUpdated or plain array
+        const realData = Array.isArray(rawData) ? rawData : (rawData.stocks || []);
+        const syncTime = rawData.lastUpdated ? new Date(rawData.lastUpdated).toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' }) : "";
+        if (syncTime) setLastSyncTime(syncTime);
+
         if (Array.isArray(realData) && realData.length > 0) {
           setStocks(prev => prev.map(s => {
             const real = realData.find((r: any) => r.id === s.id);
@@ -342,7 +349,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black font-fira uppercase tracking-widest">
                   <div className="flex items-center gap-1.5 bg-accent/10 text-accent px-2 py-1 rounded-md border border-accent/20">
                     <ShieldCheck size={12} />
-                    <span>安全節點</span>
+                    <span>系統連線安全</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={12} className="text-accent/50" />
@@ -352,6 +359,12 @@ export default function DashboardPage() {
                     <Globe size={12} className="text-accent/50" />
                     <span>地區: 亞洲/台北</span>
                   </div>
+                  {lastSyncTime && (
+                    <div className="flex items-center gap-2 text-rise/80">
+                      <div className="w-1.5 h-1.5 bg-rise rounded-full animate-pulse" />
+                      <span>數據同步時間: {lastSyncTime} (非會員延遲 20min)</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -451,48 +464,27 @@ export default function DashboardPage() {
                       <div className="w-20 h-20 bg-accent/20 rounded-3xl flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform shadow-[0_0_30px_rgba(34,211,238,0.2)]">
                         <BrainCircuit size={40} />
                       </div>
-                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase italic">神經價值追蹤</h3>
+                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase italic">精準價值雷達</h3>
                       <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed mb-8 opacity-60">
-                        偵測到機構 P/B 乖離偏移。<br />已在 5% 分位數交叉位點佈署自動警報。
+                        偵測到法人估值乖離趨勢。<br />已在 5% P/B 位階交叉位點佈署監控警報。
                       </p>
                       <Link href="/subscription" className="w-full max-w-sm">
                         <button className="w-full py-4 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all uppercase tracking-widest text-[11px]">
-                          啟動菁英節點
+                          升級進階專業版
                         </button>
                       </Link>
                     </div>
                   )}
                 </div>
               ) : (
-                // List Mode
-                <div className="flex flex-col gap-4">
+                // 列表模式
+                <div className="flex flex-col gap-3">
                   {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer group">
-                      <div className="glass p-6 flex justify-between items-center hover:glass-hover transition-all duration-300">
-                        <div className="flex items-center gap-6">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-fira tracking-widest">{stock.id}</span>
-                              <span className={cn(
-                                "text-[9px] font-black px-1.5 py-0.5 rounded tracking-widest font-fira",
-                                stock.category === "官股" ? "bg-accent/10 text-accent" : "bg-purple-500/10 text-purple-400"
-                              )}>{stock.category}</span>
-                            </div>
-                            <h3 className="text-xl font-black text-white tracking-tighter font-archivo italic">{stock.name}</h3>
-                          </div>
-                        </div>
-                        <div className="text-right flex items-center gap-12">
-                          <div className="flex flex-col items-end">
-                            <div className="text-2xl font-black font-fira tracking-tighter text-white">{stock.price.toFixed(2)}</div>
-                            <div className={cn(
-                              "flex items-center gap-1 text-[10px] font-black font-fira",
-                              stock.change > 0 ? "text-rise" : "text-fall"
-                            )}>
-                              {stock.change > 0 ? "+" : ""}{stock.change.toFixed(2)}%
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
+                      <StockListItem
+                        {...stock}
+                        pbPercentile={stock.pbPercentile}
+                      />
                     </div>
                   ))}
                 </div>
@@ -548,7 +540,7 @@ export default function DashboardPage() {
 
                     <div className="space-y-4">
                       <p className="text-[10px] font-black text-accent/40 uppercase tracking-[0.3em] flex items-center gap-2">
-                        GEMINI 1.5 PRO 深度分析
+                        GEMINI 1.5 PRO 研判摘要
                         {isAiLoading && <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping ml-1" />}
                       </p>
                       <div className={cn(
@@ -561,7 +553,7 @@ export default function DashboardPage() {
                               <p className="leading-6">「{aiSummary.summary}」</p>
                               <div className="flex items-center gap-4 pt-4 border-t border-white/5 mt-4">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[9px] uppercase font-black text-slate-500 font-fira">情緒地圖</span>
+                                  <span className="text-[9px] uppercase font-black text-slate-500 font-fira">多空評估</span>
                                   <span className={cn(
                                     "text-xs font-black font-fira px-2 py-0.5 rounded",
                                     aiSummary.sentimentScore > 0 ? "bg-rise/10 text-rise" : "bg-fall/10 text-fall"
@@ -580,7 +572,7 @@ export default function DashboardPage() {
                   <div className="mt-auto space-y-6 pt-6 border-t border-white/5">
                     <div className="space-y-3">
                       <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-fira">散戶 FOMO 指數</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-fira">市場情緒指標</span>
                         <span className={cn(
                           "text-xs font-black font-fira",
                           Math.abs(selectedStock.change) > 2 ? "text-rise" : "text-fall"

@@ -197,7 +197,10 @@ export async function getCachedStocks() {
                 performGlobalSync().catch(e => console.error("[Cache] Background refresh failed:", e));
             }
 
-            return data.stocks ? Object.values(data.stocks) : [];
+            return {
+                lastUpdated: data.lastUpdated,
+                stocks: data.stocks ? Object.values(data.stocks) : []
+            };
         } catch (e) {
             console.error("[Cache] Read error:", e);
         }
@@ -205,14 +208,12 @@ export async function getCachedStocks() {
 
     // 如果快取不存在或讀取失敗，同步創建（首次啟動）
     console.log("[Cache] No cache found, creating...");
-    await performGlobalSync();
+    const newData = await performGlobalSync();
 
-    if (fs.existsSync(CACHE_PATH)) {
-        const data = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8"));
-        return data.stocks ? Object.values(data.stocks) : [];
-    }
-
-    return [];
+    return {
+        lastUpdated: newData.lastUpdated,
+        stocks: newData.stocks ? Object.values(newData.stocks) : []
+    };
 }
 
 /**
