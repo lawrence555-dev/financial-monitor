@@ -24,7 +24,7 @@ export default function FhcCard({
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
 
-    const isCheap = pbPercentile < 15;
+
 
     return (
         <motion.div
