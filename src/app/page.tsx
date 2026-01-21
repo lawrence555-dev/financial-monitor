@@ -444,7 +444,6 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-                </div>
               ) : (
                 // List Mode
                 <div className="flex flex-col gap-4">
@@ -452,27 +451,27 @@ export default function DashboardPage() {
                     <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer group">
                       <div className="glass p-6 flex justify-between items-center hover:glass-hover transition-all duration-300">
                         <div className="flex items-center gap-6">
-                           <div className="flex flex-col">
-                             <div className="flex items-center gap-2 mb-1">
-                               <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-fira tracking-widest">{stock.id}</span>
-                               <span className={cn(
-                                 "text-[9px] font-black px-1.5 py-0.5 rounded tracking-widest font-fira",
-                                 stock.category === "官股" ? "bg-accent/10 text-accent" : "bg-purple-500/10 text-purple-400"
-                               )}>{stock.category}</span>
-                             </div>
-                             <h3 className="text-xl font-black text-white tracking-tighter font-archivo italic">{stock.name}</h3>
-                           </div>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-fira tracking-widest">{stock.id}</span>
+                              <span className={cn(
+                                "text-[9px] font-black px-1.5 py-0.5 rounded tracking-widest font-fira",
+                                stock.category === "官股" ? "bg-accent/10 text-accent" : "bg-purple-500/10 text-purple-400"
+                              )}>{stock.category}</span>
+                            </div>
+                            <h3 className="text-xl font-black text-white tracking-tighter font-archivo italic">{stock.name}</h3>
+                          </div>
                         </div>
                         <div className="text-right flex items-center gap-12">
-                           <div className="flex flex-col items-end">
-                             <div className="text-2xl font-black font-fira tracking-tighter text-white">{stock.price.toFixed(2)}</div>
-                             <div className={cn(
-                               "flex items-center gap-1 text-[10px] font-black font-fira",
-                               stock.change > 0 ? "text-rise" : "text-fall"
-                             )}>
-                               {stock.change > 0 ? "+" : ""}{stock.change.toFixed(2)}%
-                             </div>
-                           </div>
+                          <div className="flex flex-col items-end">
+                            <div className="text-2xl font-black font-fira tracking-tighter text-white">{stock.price.toFixed(2)}</div>
+                            <div className={cn(
+                              "flex items-center gap-1 text-[10px] font-black font-fira",
+                              stock.change > 0 ? "text-rise" : "text-fall"
+                            )}>
+                              {stock.change > 0 ? "+" : ""}{stock.change.toFixed(2)}%
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
