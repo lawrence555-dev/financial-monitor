@@ -92,7 +92,22 @@ export default function ValuationPage() {
 
                             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-4 w-full max-w-3xl">
                                 {loading ? (
-                                    <div className="col-span-full text-center text-slate-400 py-8">載入中...</div>
+                                    // Professional Skeleton Loader
+                                    Array.from({ length: 14 }).map((_, i) => (
+                                        <div key={i} className="aspect-square rounded-2xl bg-white/5 animate-pulse border border-white/5" />
+                                    ))
+                                ) : stocks.length === 0 ? (
+                                    // Empty / Error State
+                                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500">
+                                        <Info size={48} className="mb-4 opacity-50" />
+                                        <p className="font-bold">暫時無法取得估值數據</p>
+                                        <button
+                                            onClick={() => window.location.reload()}
+                                            className="mt-4 px-6 py-2 bg-white/5 hover:bg-white/10 rounded-full text-xs font-black transition-all"
+                                        >
+                                            重新整理
+                                        </button>
+                                    </div>
                                 ) : (
                                     stocks.sort((a: any, b: any) => a.pbPercentile - b.pbPercentile).map((stock: any) => (
                                         <motion.div
