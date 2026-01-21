@@ -119,7 +119,7 @@ export default function FhcCard({
             <div className="h-20 w-full mb-4">
                 {chartData && chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData}>
+                        <AreaChart data={chartData} className="focus:outline-none outline-none">
                             <defs>
                                 <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0.3} />
@@ -130,6 +130,7 @@ export default function FhcCard({
                                 dataKey="time"
                                 tick={{ fill: 'var(--fg-mute)', fontSize: 9, fontWeight: 'bold' }}
                                 tickLine={false}
+                                id={`xaxis-${id}`}
                                 axisLine={{ stroke: 'var(--border)' }}
                                 ticks={['09:00', '11:00', '13:30']}
                             />

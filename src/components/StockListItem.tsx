@@ -45,16 +45,17 @@ export default function StockListItem({
             </div>
 
             {/* Middle: Compact Chart - Full Horizontal Width */}
-            <div className="h-10 flex-1 max-w-[400px]">
+            <div className="h-10 flex-1 max-w-[400px] focus:outline-none">
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData}>
+                        <AreaChart data={chartData} className="focus:outline-none">
                             <defs>
                                 <linearGradient id={`list-gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0.2} />
                                     <stop offset="95%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
+                            <YAxis hide domain={['dataMin - 0.1', 'dataMax + 0.1']} />
                             <Area
                                 type="monotone"
                                 dataKey="value"
