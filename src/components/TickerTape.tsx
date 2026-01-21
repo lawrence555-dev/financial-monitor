@@ -24,24 +24,24 @@ export default function TickerTape() {
         <div className="h-10 glass rounded-none border-x-0 border-t-0 border-main overflow-hidden flex items-center z-40 bg-transparent">
             <div className="flex animate-[ticker_60s_linear_infinite] hover:[animation-play-state:paused] h-full">
                 {[...STOCKS, ...STOCKS].map((stock, i) => (
-                    <div key={`${stock.id}-${i}`} className="flex items-center gap-6 px-8 border-r border-main h-full group opacity-90 hover:opacity-100 transition-opacity">
+                    <div key={`${stock.id}-${i}`} className="flex items-center gap-6 px-8 border-r border-main h-full group opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 whitespace-nowrap">
                         <span className="text-mute text-[10px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
                             {stock.id}
                         </span>
-                        <span className="text-[11px] font-black tracking-tight font-archivo">
+                        <span className="text-[11px] font-black tracking-tight font-archivo whitespace-nowrap">
                             {stock.name}
                         </span>
                         <span className="text-xs font-fira font-black tracking-tighter">
                             {stock.price.toFixed(2)}
                         </span>
                         <div className={cn(
-                            "flex items-center gap-0.5 text-[9px] font-black font-fira leading-none px-1.5 py-0.5 rounded",
+                            "flex items-center gap-0.5 text-[9px] font-black font-fira leading-none px-1.5 py-0.5 rounded whitespace-nowrap",
                             stock.isUp ? 'text-rise bg-rise/5' : 'text-fall bg-fall/5'
                         )}>
                             {stock.isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                             <span>{Math.abs(stock.change || 0).toFixed(2)}%</span>
                         </div>
-                        <span className="text-[8px] font-black text-mute opacity-40 font-archivo tracking-[0.2em]">
+                        <span className="text-[8px] font-black text-mute opacity-40 font-archivo tracking-[0.2em] whitespace-nowrap">
                             即時數據
                         </span>
                     </div>
