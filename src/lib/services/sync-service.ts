@@ -9,10 +9,6 @@ import { FHC_STOCKS } from "@/lib/constants";
 /**
  * 獲取台灣目前的日期 (YYYY-MM-DD 格式)
  */
-
-/**
- * 獲取台灣目前的日期 (YYYY-MM-DD 格式)
- */
 function getTaiwanDate() {
     return new Intl.DateTimeFormat('zh-TW', {
         timeZone: 'Asia/Taipei',
@@ -151,21 +147,33 @@ export async function performGlobalSync() {
 
 /**
  * 從快取中獲取即時數據 (全站通用)
- * 採用「先返回舊數據，背景刷新」策略以加速首次渲染
+ * 策略：若為新的一天或數據嚴重過時 (>15分)，則等待同步；其餘情況採用 SWR (背景刷新)
  */
 export async function getCachedStocks() {
-    // 如果快取存在，立即返回（不阻塞）
+    const currentDay = getTaiwanDate();
+
+    // 如果快取存在
     if (fs.existsSync(CACHE_PATH)) {
         try {
             const data = JSON.parse(fs.readFileSync(CACHE_PATH, "utf8"));
             const lastUpdated = new Date(data.lastUpdated || 0);
             const now = new Date();
             const diffMs = now.getTime() - lastUpdated.getTime();
+            const cacheDay = data.twDate;
 
-            // 如果快取超過 2 分鐘，背景異步刷新（不阻塞返回）
-            if (diffMs > 120000) {
+            // 1. 嚴重過時：如果是新的一天，或者資料超過 15 分鐘沒更新，則強制等待同步 (防止用戶看到昨日舊資料)
+            if (cacheDay !== currentDay || diffMs > 900000) {
+                console.log(`[Cache] Data critically stale (${diffMs / 1000}s/Day:${cacheDay}), awaiting prioritized sync...`);
+                const newData = await performGlobalSync();
+                return {
+                    lastUpdated: newData.lastUpdated,
+                    stocks: newData.stocks ? Object.values(newData.stocks) : []
+                };
+            }
+
+            // 2. 一般過時：資料超過 1 分鐘但小於 15 分鐘，採用 SWR (先給舊的，背景更新)
+            if (diffMs > 60000) {
                 console.log("[Cache] Stale cache, triggering background refresh...");
-                // 非阻塞：不 await，讓刷新在背景執行
                 performGlobalSync().catch(e => console.error("[Cache] Background refresh failed:", e));
             }
 
@@ -178,7 +186,7 @@ export async function getCachedStocks() {
         }
     }
 
-    // 如果快取不存在或讀取失敗，同步創建（首次啟動）
+    // 如果快取不存在，同步創建
     console.log("[Cache] No cache found, creating...");
     const newData = await performGlobalSync();
 
