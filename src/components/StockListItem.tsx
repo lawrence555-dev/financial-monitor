@@ -1,7 +1,7 @@
 "use client";
 
-import { AreaChart, Area, ResponsiveContainer, YAxis } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import TradingChart from "@/components/TradingChart";
 import { cn } from "@/lib/utils";
 
 interface StockListItemProps {
@@ -45,29 +45,20 @@ export default function StockListItem({
             </div>
 
             {/* Middle: Compact Chart - Full Horizontal Width */}
-            <div className="h-10 flex-1 max-w-[400px] focus:outline-none">
+            <div className="h-10 flex-1 max-w-[400px] focus:outline-none -mx-4">
                 {chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} className="focus:outline-none">
-                            <defs>
-                                <linearGradient id={`list-gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <YAxis hide domain={['dataMin - 0.1', 'dataMax + 0.1']} />
-                            <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"}
-                                strokeWidth={2}
-                                fillOpacity={1}
-                                fill={`url(#list-gradient-${id})`}
-                                isAnimationActive={false}
-                                connectNulls={true}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                    <div className="h-10 w-full pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+                        <TradingChart
+                            data={chartData as { time: string; value: number }[]}
+                            isUp={isUp}
+                            height={40}
+                            enableGrid={false}
+                            enableCrosshair={false}
+                            enableTimeScale={false}
+                            enablePriceScale={false}
+                            lineWidth={1}
+                        />
+                    </div>
                 ) : (
                     <div className="h-full flex items-center justify-center border border-dashed border-main rounded-lg opacity-30">
                         <span className="text-[8px] font-black uppercase tracking-widest">Loading...</span>

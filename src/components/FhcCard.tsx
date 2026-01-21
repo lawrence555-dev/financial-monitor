@@ -1,10 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis, Tooltip } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
+import TradingChart from "@/components/TradingChart";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
 
 interface FhcCardProps {
     id: string;
@@ -25,58 +24,7 @@ export default function FhcCard({
     // Breathing light effect for low valuation (cheap Zone)
     const isCheap = pbPercentile < 15;
 
-    // Prepare chart data: only real data from API, with full X-axis range
-    const chartData = useMemo(() => {
-        if (!data || data.length === 0) return [];
-
-        // Get current time in Taipei timezone
-        const now = new Date();
-        const taipeiTime = new Intl.DateTimeFormat('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Taipei'
-        }).format(now);
-
-        const [currentHour, currentMinute] = taipeiTime.split(':').map(Number);
-        const currentMinutes = currentHour * 60 + currentMinute;
-
-        // Trading hours: 9:00 (540 min) to 13:30 (810 min)
-        const tradingStart = 9 * 60; // 540
-        const tradingEnd = 13 * 60 + 30; // 810
-
-        // Filter data within trading hours only (real data from API)
-        const tradingData = data.filter(point => {
-            if (!point.time) return false;
-            const [hour, minute] = point.time.split(':').map(Number);
-            const pointMinutes = hour * 60 + minute;
-            return pointMinutes >= tradingStart && pointMinutes <= tradingEnd;
-        });
-
-        // Create complete time series with real data and null for missing/future times
-        const completeTimeSeries: { time: string; value: number | null }[] = [];
-        const dataMap = new Map<string, number>();
-
-        tradingData.forEach(point => {
-            if (point.time) {
-                dataMap.set(point.time, point.value);
-            }
-        });
-
-        // Generate all time slots from 9:00 to 13:30 (every 5 minutes)
-        for (let minutes = tradingStart; minutes <= tradingEnd; minutes += 5) {
-            const hour = Math.floor(minutes / 60);
-            const minute = minutes % 60;
-            const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-
-            // Only use real data from API, no forward fill
-            const value = dataMap.get(timeStr) ?? null;
-
-            completeTimeSeries.push({ time: timeStr, value });
-        }
-
-        return completeTimeSeries;
-    }, [data]);
+    const isCheap = pbPercentile < 15;
 
     return (
         <motion.div
@@ -117,55 +65,19 @@ export default function FhcCard({
             </div>
 
             <div className="h-20 w-full mb-4">
-                {chartData && chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} className="focus:outline-none outline-none">
-                            <defs>
-                                <linearGradient id={`gradient-${id}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <XAxis
-                                dataKey="time"
-                                tick={{ fill: 'var(--fg-mute)', fontSize: 9, fontWeight: 'bold' }}
-                                tickLine={false}
-                                id={`xaxis-${id}`}
-                                axisLine={{ stroke: 'var(--border)' }}
-                                ticks={['09:00', '11:00', '13:30']}
-                            />
-                            <YAxis hide domain={['dataMin - 0.2', 'dataMax + 0.2']} />
-                            <Tooltip
-                                trigger="hover"
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length && payload[0].value !== null) {
-                                        return (
-                                            <div className="glass bg-slate-950/90 border-main p-2 rounded-lg shadow-[0_0_20px_var(--glow)]">
-                                                <p className="text-[10px] font-black text-white px-1 mb-1 font-fira tracking-tighter">
-                                                    {Number(payload[0].value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </p>
-                                                <p className="text-[8px] font-black text-accent/50 uppercase px-1 font-fira tracking-widest">
-                                                    {payload[0].payload.time}
-                                                </p>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke={change > 0 ? "var(--color-rise)" : change < 0 ? "var(--color-fall)" : "var(--fg-mute)"}
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill={`url(#gradient-${id})`}
-                                isAnimationActive={true}
-                                animationDuration={1500}
-                                connectNulls={true}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                {data && data.length > 0 ? (
+                    <div className="h-20 w-full pointer-events-none">
+                        <TradingChart
+                            data={data as { time: string; value: number }[]}
+                            isUp={isUp}
+                            height={80}
+                            enableGrid={false}
+                            enableCrosshair={false}
+                            enableTimeScale={false}
+                            enablePriceScale={false}
+                            lineWidth={2}
+                        />
+                    </div>
                 ) : (
                     <div className="h-full w-full flex items-center justify-center border border-dashed border-main rounded-xl bg-accent/2">
                         <span className="text-[10px] font-black text-mute uppercase tracking-widest animate-pulse">
