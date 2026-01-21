@@ -445,6 +445,18 @@ export default function DashboardPage() {
                   )}
                 </div>
               ) : (
+                // List Mode
+                <div className="flex flex-col gap-4">
+                  {filteredStocks.map((stock) => (
+                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
+                      <StockListItem
+                        {...stock}
+                        pbPercentile={stock.pbPercentile}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Selected Stock Detail Panel (Multi-Chart Linkage) */}
