@@ -1,6 +1,6 @@
 # FHC-Elite 技術白皮書 (Technical Whitepaper)
 
-## 📖 目錄
+## 目錄
 - [1. 系統架構 (System Architecture)](#1-系統架構-system-architecture)
   - [1.1 技術棧 (Tech Stack)](#11-技術棧-tech-stack)
   - [1.2 目錄結構 (Project Structure)](#12-目錄結構-project-structure)
