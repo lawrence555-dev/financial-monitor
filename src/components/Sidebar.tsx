@@ -51,15 +51,6 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="mt-auto flex flex-col items-center gap-6 pb-6">
-                <div className="flex flex-col items-center opacity-30">
-                    <ShieldCheck size={18} className="text-accent mb-1" />
-                    <span className="text-[8px] font-black tracking-widest text-white uppercase">Secured</span>
-                </div>
-                <div className="p-3.5 text-mute opacity-50 hover:opacity-100 transition-opacity cursor-pointer">
-                    <Settings size={22} />
-                </div>
-            </div>
         </aside>
     );
 }
