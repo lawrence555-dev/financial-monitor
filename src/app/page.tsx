@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import TickerTape from "@/components/TickerTape";
@@ -12,28 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/Toast";
 
-// 13 FHC Stocks - Initial structure only, prices loaded dynamically
-const STOCK_IDS = [
-  { id: "2881", name: "富邦金", category: "民營" as const },
-  { id: "2882", name: "國泰金", category: "民營" as const },
-  { id: "2886", name: "兆豐金", category: "官股" as const },
-  { id: "2891", name: "中信金", category: "民營" as const },
-  { id: "2880", name: "華南金", category: "官股" as const },
-  { id: "2884", name: "玉山金", category: "民營" as const },
-  { id: "2892", name: "第一金", category: "官股" as const },
-  { id: "2885", name: "元大金", category: "民營" as const },
-  { id: "2887", name: "台新新光金", category: "民營" as const },
-  { id: "2890", name: "永豐金", category: "民營" as const },
-  { id: "2883", name: "凱基金", category: "民營" as const },
-  { id: "2889", name: "國票金", category: "民營" as const },
-  { id: "5880", name: "合庫金", category: "官股" as const },
-];
+import { FHC_STOCKS } from "@/lib/constants";
 
 export default function DashboardPage() {
   const { showToast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [stocks, setStocks] = useState(
-    STOCK_IDS.map(s => ({
+    FHC_STOCKS.map(s => ({
       ...s,
       price: 0,
       diff: 0,
@@ -46,7 +31,6 @@ export default function DashboardPage() {
     }))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [lastSyncTime, setLastSyncTime] = useState<string>("");
   const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -60,11 +44,13 @@ export default function DashboardPage() {
   const selectedStock = stocks.find(s => s.id === selectedId);
 
   // Filtered stocks based on search and category
-  const filteredStocks = stocks.filter(stock => {
-    const matchesSearch = stock.name.includes(searchQuery) || stock.id.includes(searchQuery);
-    const matchesFilter = filterCategory === "all" || stock.category === filterCategory;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredStocks = useMemo(() => {
+    return stocks.filter(stock => {
+      const matchesSearch = stock.name.includes(searchQuery) || stock.id.includes(searchQuery);
+      const matchesFilter = filterCategory === "all" || stock.category === filterCategory;
+      return matchesSearch && matchesFilter;
+    });
+  }, [stocks, searchQuery, filterCategory]);
 
   // Handle stock click
   const handleStockClick = (stockId: string) => {
@@ -74,7 +60,7 @@ export default function DashboardPage() {
   useEffect(() => {
     setMounted(true);
 
-    const fetchRealtimePrices = async () => {
+    const fetchMarketData = async () => {
       try {
         const res = await fetch("/api/stock-prices/realtime");
         const rawData = await res.json();
@@ -95,38 +81,20 @@ export default function DashboardPage() {
               diff: real.diff || s.diff,
               isUp: (real.diff || 0) >= 0,
               pbValue: real.pbValue || s.pbValue,
-              pbPercentile: real.pbPercentile || s.pbPercentile
+              pbPercentile: real.pbPercentile || s.pbPercentile,
+              data: real.data || s.data // Optimized: Intraday data is now included in realtime fetch
             };
           }));
         }
       } catch (e) {
-        console.error("Real-time poll failed", e);
+        console.error("Market data fetch failed", e);
       }
-    };
-
-    const fetchIntradayHistory = async () => {
-      const intradayPromises = STOCK_IDS.map(async (s) => {
-        try {
-          const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
-          const intraData = await intraRes.json();
-          return { id: s.id, history: intraData };
-        } catch (e) {
-          return { id: s.id, history: [] };
-        }
-      });
-      const allHistory = await Promise.all(intradayPromises);
-      setStocks(prev => prev.map(s => {
-        const historyItem = allHistory.find(h => h.id === s.id);
-        const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
-        return { ...s, data: history };
-      }));
     };
 
     const initData = async () => {
       setMounted(true);
       try {
-        await fetchRealtimePrices();
-        await fetchIntradayHistory();
+        await fetchMarketData();
       } catch (e) {
         console.error("Initial data fetch failed.", e);
       }
@@ -139,11 +107,8 @@ export default function DashboardPage() {
       setCurrentTime(new Date());
     }, 1000);
 
-    // 實時價格輪詢 (每 30 秒)
-    const priceInterval = setInterval(fetchRealtimePrices, 30000);
-
-    // 線圖走勢輪詢 (每 2 分鐘) - 從 5 分鐘縮短為 2 分鐘
-    const historyInterval = setInterval(fetchIntradayHistory, 120000);
+    // 市場數據輪詢 (每 30 秒) - 同步更新價格與趨勢線
+    const marketInterval = setInterval(fetchMarketData, 30000);
 
     // 圖表時間過濾更新 (每 1 分鐘) - 觸發 FhcCard 重新計算過濾後的數據
     const chartUpdateInterval = setInterval(() => {
@@ -164,7 +129,23 @@ export default function DashboardPage() {
       // 在 13:35 執行一次額外同步
       if (taipeiTime === '13:35') {
         console.log('[Post-Market Sync] Fetching final closing data...');
-        fetchIntradayHistory();
+        // Directly fetch intraday data for all stocks
+        const intradayPromises = FHC_STOCKS.map(async (s) => {
+          try {
+            const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
+            const intraData = await intraRes.json();
+            return { id: s.id, history: intraData };
+          } catch (e) {
+            return { id: s.id, history: [] };
+          }
+        });
+        Promise.all(intradayPromises).then(allHistory => {
+          setStocks(prev => prev.map(s => {
+            const historyItem = allHistory.find(h => h.id === s.id);
+            const history = Array.isArray(historyItem?.history) ? historyItem.history : [];
+            return { ...s, data: history };
+          }));
+        });
       }
     };
 
@@ -172,8 +153,7 @@ export default function DashboardPage() {
 
     return () => {
       clearInterval(clockInterval);
-      clearInterval(priceInterval);
-      clearInterval(historyInterval);
+      clearInterval(marketInterval);
       clearInterval(chartUpdateInterval);
       clearInterval(postMarketCheckInterval);
     };
@@ -192,23 +172,6 @@ export default function DashboardPage() {
     localStorage.setItem('viewMode', viewMode);
   }, [viewMode]);
 
-  // Theme Management
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
 
   // Data backfill: Check for missing 13:30 data after market close
   useEffect(() => {
@@ -244,7 +207,7 @@ export default function DashboardPage() {
         if (needsBackfill) {
           console.log('[Backfill] Missing 13:30 data detected, fetching...');
           // Directly fetch intraday data
-          const intradayPromises = STOCK_IDS.map(async (s) => {
+          const intradayPromises = FHC_STOCKS.map(async (s) => {
             try {
               const intraRes = await fetch(`/api/stock-prices/intraday?stockId=${s.id}`);
               const intraData = await intraRes.json();
@@ -336,7 +299,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#020617] pl-20 transition-all duration-700 font-inter">
       <Sidebar />
       <div className="flex flex-col min-h-screen">
-        <TickerTape />
+        <TickerTape stocks={stocks} />
 
         <main className="flex-1 p-8 pt-6 relative overflow-hidden">
           {/* Dashboard Header */}

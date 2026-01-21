@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { userId, stockId, stockName, shares, price, dividend, totalDividend, netDividend, nhiPremium, taxCredit } = body;
+        const { userId, stockId, stockName, shares, price, cashDividend, totalDividend, netDividend, nhiPremium, taxCredit } = body;
 
         const newScenario = await prisma.taxScenario.create({
             data: {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
                 stockName,
                 shares: BigInt(Math.floor(shares || 0)),
                 price: Number(price || 0),
-                dividend: Number(dividend || 0),
+                dividend: Number(cashDividend || 0), // Mapping frontend cashDividend to DB dividend
                 totalDividend: Number(totalDividend || 0),
                 netDividend: Number(netDividend || 0),
                 nhiPremium: Number(nhiPremium || 0),

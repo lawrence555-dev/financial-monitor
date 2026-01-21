@@ -11,6 +11,8 @@ import { Plus, RefreshCcw, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/Toast";
 
+import { FHC_STOCKS } from "@/lib/constants";
+
 export default function PortfolioPage() {
     const [holdings, setHoldings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -21,28 +23,35 @@ export default function PortfolioPage() {
     const fetchPortfolio = async () => {
         setLoading(true);
         try {
-            // 1. Fetch holdings from our API
+            // 1. Fetch holdings from our API (already enriched with live prices)
             const res = await fetch("/api/portfolio");
             const data = await res.json();
 
-            // 2. Fetch real-time prices for these stocks
-            let pricesData = [];
-            try {
-                const pricesRes = await fetch("/api/stock-prices/realtime");
-                if (pricesRes.ok) {
-                    pricesData = await pricesRes.json();
-                }
-            } catch (e) {
-                console.warn("Failed to fetch real-time prices, using fallbacks:", e);
-            }
-
-            // 3. Map real-time prices to holdings
             if (Array.isArray(data)) {
                 const enrichedHoldings = data.map((h: any) => {
-                    const realPrice = Array.isArray(pricesData) ? pricesData.find((p: any) => p.id === h.stockId) : null;
+                    const stockBase = FHC_STOCKS.find(s => s.id === h.stockId);
+
+                    const marketValue = (h.currentPrice || 0) * h.quantity;
+                    const costBasis = (h.avgCost || 0) * h.quantity;
+                    const unrealizedProfit = marketValue - costBasis;
+
+                    // 專業會計建議：追蹤預估配息能力 (股利收益)
+                    const estCashDividend = stockBase ? (h.quantity * stockBase.cashDividend) : 0;
+                    const estStockDividendShares = stockBase ? (h.quantity * stockBase.stockDividend / 10) : 0;
+
+                    const totalReturn = unrealizedProfit + estCashDividend;
+                    const totalReturnRoi = costBasis > 0 ? (totalReturn / costBasis) * 100 : 0;
+
                     return {
                         ...h,
-                        currentPrice: realPrice ? realPrice.price : (h.avgCost || 0) // Fallback to avgCost if price unknown
+                        marketValue,
+                        costBasis,
+                        unrealizedProfit,
+                        unrealizedRoi: costBasis > 0 ? (unrealizedProfit / costBasis) * 100 : 0,
+                        estCashDividend,
+                        estStockDividendShares,
+                        totalReturn,
+                        totalReturnRoi
                     };
                 });
                 setHoldings(enrichedHoldings);
@@ -54,7 +63,7 @@ export default function PortfolioPage() {
             }
         } catch (error) {
             console.error("Fetch portfolio error:", error);
-            showToast("無法獲取投資組合數據", "error");
+            showToast("無法獲獲投資組合數據", "error");
         } finally {
             setLoading(false);
         }
@@ -97,10 +106,15 @@ export default function PortfolioPage() {
     };
 
     // Calculations
-    const totalValue = holdings.reduce((acc, h) => acc + (h.currentPrice || 0) * h.quantity, 0);
-    const totalCost = holdings.reduce((acc, h) => acc + h.avgCost * h.quantity, 0);
-    const totalProfit = totalValue - totalCost;
+    const totalValue = holdings.reduce((acc, h) => acc + (h.marketValue || 0), 0);
+    const totalCost = holdings.reduce((acc, h) => acc + (h.costBasis || 0), 0);
+    const totalProfit = holdings.reduce((acc, h) => acc + (h.unrealizedProfit || 0), 0);
     const totalRoi = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+    // 專業會計觀點：計算總投報 (價差 + 股息)
+    const totalEstDividend = holdings.reduce((acc, h) => acc + (h.estCashDividend || 0), 0);
+    const totalEstReturn = totalProfit + totalEstDividend;
+    const totalReturnRoi = totalCost > 0 ? (totalEstReturn / totalCost) * 100 : 0;
 
     const compositionData = holdings.map(h => ({
         name: h.stock.name,
@@ -148,6 +162,8 @@ export default function PortfolioPage() {
                                 totalValue={totalValue}
                                 totalProfit={totalProfit}
                                 totalRoi={totalRoi}
+                                totalReturnRoi={totalReturnRoi}
+                                estDividend={totalEstDividend}
                             />
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

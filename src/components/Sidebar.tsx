@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, LayoutGrid, Calculator, BrainCircuit, Briefcase, Settings, LogOut, ShieldCheck } from "lucide-react";
+import { Home, LayoutGrid, Calculator, BrainCircuit, Briefcase, Settings, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,28 +14,8 @@ const NAV_ITEMS = [
     { icon: Settings, label: "系統設定", href: "/settings" },
 ];
 
-import { Sun, Moon } from "lucide-react";
-import { useState, useEffect } from "react";
-
 export default function Sidebar() {
     const pathname = usePathname();
-    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-        if (savedTheme) {
-            setTheme(savedTheme);
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-    }, []);
-
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
-        window.dispatchEvent(new Event('theme-change'));
-    };
 
     return (
         <aside className="fixed left-0 top-0 bottom-0 w-20 flex flex-col items-center py-8 glass rounded-none border-y-0 border-l-0 border-main z-50">
@@ -72,13 +52,6 @@ export default function Sidebar() {
             </nav>
 
             <div className="mt-auto flex flex-col items-center gap-6 pb-4">
-                <button
-                    onClick={toggleTheme}
-                    className="p-3.5 rounded-2xl text-mute hover:text-accent transition-all duration-300 bg-accent/5"
-                    title={theme === 'light' ? "切換至暗色模式" : "切換至明亮模式"}
-                >
-                    {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
-                </button>
                 <div className="p-3.5 text-mute opacity-50">
                     <Settings size={22} />
                 </div>

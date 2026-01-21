@@ -4,21 +4,11 @@ import path from "path";
 
 const CACHE_PATH = path.join(process.cwd(), "public/data/stock_cache.json");
 
-const FHC_STOCKS = [
-    { id: "2880", name: "華南金", category: "官股" },
-    { id: "2881", name: "富邦金", category: "民營" },
-    { id: "2882", name: "國泰金", category: "民營" },
-    { id: "2883", name: "凱基金", category: "民營" },
-    { id: "2884", name: "玉山金", category: "民營" },
-    { id: "2885", name: "元大金", category: "民營" },
-    { id: "2886", name: "兆豐金", category: "官股" },
-    { id: "2887", name: "台新新光金", category: "民營" },
-    { id: "2889", name: "國票金", category: "民營" },
-    { id: "2890", name: "永豐金", category: "民營" },
-    { id: "2891", name: "中信金", category: "民營" },
-    { id: "2892", name: "第一金", category: "官股" },
-    { id: "5880", name: "合庫金", category: "官股" }
-];
+import { FHC_STOCKS } from "@/lib/constants";
+
+/**
+ * 獲取台灣目前的日期 (YYYY-MM-DD 格式)
+ */
 
 /**
  * 獲取台灣目前的日期 (YYYY-MM-DD 格式)
@@ -80,28 +70,10 @@ export async function performGlobalSync() {
                 };
             }).filter((item: any) => item.value !== null && item.dateStr === todayStr);
 
-            // 使用估算的每股淨值（Book Value Per Share）
-            // Yahoo Finance API 需要認證，改用歷史平均值估算
-            const estimatedBookValues: Record<string, number> = {
-                '2880': 32.5,  // 華南金
-                '2881': 31.2,  // 富邦金
-                '2882': 28.8,  // 國泰金
-                '2883': 18.5,  // 開發金
-                '2884': 12.8,  // 玉山金
-                '2885': 15.2,  // 元大金
-                '2886': 18.9,  // 兆豐金
-                '2887': 14.6,  // 台新金
-                '2889': 22.3,  // 國票金
-                '2890': 19.7,  // 永豐金
-                '2891': 18.4,  // 中信金
-                '2892': 11.5,  // 第一金
-                '5880': 45.8,  // 合庫金
-            };
-
             let pbValue = 1.5;  // 預設值
             let pbPercentile = 50;  // 預設中位數
 
-            const estimatedBookValue = estimatedBookValues[stock.id];
+            const estimatedBookValue = stock.estimatedBookValue;
             if (estimatedBookValue && currentPrice > 0) {
                 const realPB = currentPrice / estimatedBookValue;
                 pbValue = Number(realPB.toFixed(2));

@@ -13,21 +13,7 @@ const TAX_LIMIT = 80000; // 每一申報戶抵減上限 8 萬
 const NHI_RATE = 0.0211; // 二代健保補充保費 2.11%
 const NHI_THRESHOLD = 20000; // 健保補費申報門檻 2 萬
 
-const STOCKS_BASE = [
-    { id: "2880", name: "華南金", dividend: 1.2 },
-    { id: "2881", name: "富邦金", dividend: 3.0 },
-    { id: "2882", name: "國泰金", dividend: 2.0 },
-    { id: "2883", name: "凱基金", dividend: 1.0 },
-    { id: "2884", name: "玉山金", dividend: 1.5 },
-    { id: "2885", name: "元大金", dividend: 1.5 },
-    { id: "2886", name: "兆豐金", dividend: 1.8 },
-    { id: "2887", name: "台新新光金", dividend: 1.0 },
-    { id: "2889", name: "國票金", dividend: 0.7 },
-    { id: "2890", name: "永豐金", dividend: 1.2 },
-    { id: "2891", name: "中信金", dividend: 1.8 },
-    { id: "2892", name: "第一金", dividend: 1.1 },
-    { id: "5880", name: "合庫金", dividend: 1.1 },
-];
+import { FHC_STOCKS } from "@/lib/constants";
 
 export default function TaxPage() {
     const { showToast } = useToast();
@@ -83,9 +69,9 @@ export default function TaxPage() {
             // 安全數值校準
             const safeShares = Math.floor(shares || 0);
             const safePrice = selectedStock.price || 0;
-            const safeDividend = selectedStock.dividend || 0;
+            const safeDividend = selectedStock.cashDividend || 0;
             const safeTotalDividend = totalDividend || 0;
-            const safeNetDividend = netDividend || 0;
+            const safeNetDividend = netCash || 0;
             const safeNhiPremium = nhiPremium || 0;
             const safeTaxCredit = taxCredit || 0;
 
@@ -99,7 +85,7 @@ export default function TaxPage() {
                 stockName: selectedStock.name,
                 shares: safeShares,
                 price: safePrice,
-                dividend: safeDividend,
+                cashDividend: safeDividend,
                 totalDividend: safeTotalDividend,
                 netDividend: safeNetDividend,
                 nhiPremium: safeNhiPremium,
@@ -140,21 +126,39 @@ export default function TaxPage() {
         }
     };
 
-    const STOCKS = STOCKS_BASE.map(s => ({
+    const STOCKS = FHC_STOCKS.map(s => ({
         ...s,
         price: livePrices[s.id] || 0
     }));
 
     const selectedStock = STOCKS.find(s => s.id === selectedId) || STOCKS[1];
 
-    const totalDividend = (shares || 0) * (selectedStock.dividend || 0);
-    const nhiPremium = totalDividend >= NHI_THRESHOLD ? totalDividend * NHI_RATE : 0;
-    const taxCredit = Math.min(totalDividend * TAX_RATE, TAX_LIMIT);
-    const netDividend = totalDividend - nhiPremium;
-    const dividendYield = selectedStock.price > 0 ? (selectedStock.dividend / selectedStock.price) * 100 : 0;
+    const totalCash = (shares || 0) * (selectedStock.cashDividend || 0);
+    const sharesFromStockDividend = (shares || 0) * (selectedStock.stockDividend || 0) / 10; // 每股配發金額 / 10 = 配發股數比例 (例如配 0.5 元即 1:0.05)
 
-    const incomeTaxBurden = totalDividend * userTaxRate;
-    const netReturnWithTax = netDividend - incomeTaxBurden + taxCredit;
+    // 專業會計準則：配股部分以面額 $10 課稅
+    const taxableStockValue = (shares || 0) * (selectedStock.stockDividend || 0); // 因為 stockDividend 通常以「元/股」表示，且台股面額為 $10，故 0.1 元 = 1% 配股
+    const taxableDividend = totalCash + taxableStockValue;
+
+    // 二代健保：以 20,000 為門檻，稅基為 (現金股利 + 配股面額)
+    const nhiPremium = taxableDividend >= NHI_THRESHOLD ? taxableDividend * NHI_RATE : 0;
+
+    // 可抵減稅額：稅基 * 8.5%，上限 8 萬
+    const taxCredit = Math.min(taxableDividend * TAX_RATE, TAX_LIMIT);
+
+    // 實拿現金：總現金 - 二代健保 (證券商通常從現金中扣除)
+    const netCash = totalCash - nhiPremium;
+
+    // 總投資收益 (含配股市值)：淨現金 + (配發股數 * 當前股價)
+    const totalStockMarketValue = (shares || 0) * (selectedStock.stockDividend || 0) / 10 * (selectedStock.price || 10);
+    const totalDividend = netCash + totalStockMarketValue;
+
+    const dividendYield = selectedStock.price > 0 ? ((selectedStock.cashDividend + selectedStock.stockDividend) / selectedStock.price) * 100 : 0;
+
+    // 所得稅負擔
+    const incomeTaxBurden = taxableDividend * userTaxRate;
+    // 最終年度淨資產增加 (含配股、含稅務抵減)
+    const netReturnWithTax = totalDividend - incomeTaxBurden + taxCredit;
 
     if (!mounted) return null;
 
@@ -293,7 +297,10 @@ export default function TaxPage() {
                                 {/* 大型主要數據卡 */}
                                 <div className="md:col-span-2 glass bg-gradient-to-br from-slate-900 to-black p-8 border-white/10 ring-1 ring-white/5 flex flex-col justify-between">
                                     <div>
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-2 block">預估年度配息總額</span>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] block">預估總獲利 (含配股市值)</span>
+                                            <span className="text-[9px] text-slate-600 font-bold">稅務級距基準: {formatCurrency(taxableDividend)}</span>
+                                        </div>
                                         <div className="flex items-baseline gap-4">
                                             <h2 className="text-7xl font-black text-white font-mono tracking-tighter">
                                                 {formatCurrency(totalDividend)}
@@ -305,17 +312,17 @@ export default function TaxPage() {
                                     </div>
                                     <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/5 pt-6">
                                         <div>
-                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">稅後實領</span>
-                                            <span className="text-xl font-black text-white font-mono">{formatCurrency(netDividend)}</span>
+                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">入帳現金股利</span>
+                                            <span className="text-xl font-black text-white font-mono">{formatCurrency(netCash)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">二代健保</span>
+                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">二代健保扣費</span>
                                             <span className={cn("text-xl font-black font-mono", nhiPremium > 0 ? "text-rose-500" : "text-slate-500")}>
                                                 -{formatCurrency(nhiPremium)}
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">可抵減稅額</span>
+                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">所得稅抵減 (8.5%)</span>
                                             <span className="text-xl font-black text-blue-400 font-mono">+{formatCurrency(taxCredit)}</span>
                                         </div>
                                     </div>
@@ -329,8 +336,10 @@ export default function TaxPage() {
                                             <span className="text-xs font-bold text-slate-500 font-mono">{selectedId}</span>
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">預估股息</span>
-                                            <span className="text-lg font-black text-rise font-mono">{selectedStock.dividend} <small className="text-[10px]">NT</small></span>
+                                            <span className="text-[9px] block text-slate-600 font-black uppercase mb-1">預估股息 (現金/股票)</span>
+                                            <span className="text-lg font-black text-rise font-mono">
+                                                {selectedStock.cashDividend.toFixed(2)} / {selectedStock.stockDividend.toFixed(2)}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="space-y-3">
@@ -390,7 +399,7 @@ export default function TaxPage() {
                                             <p className="text-[12px] font-bold text-slate-300 leading-relaxed relative z-10">
                                                 {taxCredit > incomeTaxBurden
                                                     ? `此配置處於「稅務溢價區」，您不僅無需繳稅，還能產生退稅效應，實質額外增加 ${((taxCredit - incomeTaxBurden) / (totalDividend || 1) * 100).toFixed(2)}% 收益。`
-                                                    : `處於「稅務遞減區」，建議考慮 ${selectedStock.dividend > 1.5 ? "拆單持有" : "增加受供養人"} 以降低邊際稅率，或改配置資本利得股。`}
+                                                    : `處於「稅務遞減區」，建議考慮 ${selectedStock.cashDividend + selectedStock.stockDividend > 1.5 ? "拆單持有" : "增加受供養人"} 以降低邊際稅率，或改配置資本利得股。`}
                                             </p>
                                         </div>
                                     </div>
@@ -399,9 +408,9 @@ export default function TaxPage() {
                                     <div className="md:col-span-3">
                                         <div className="grid grid-cols-5 gap-3">
                                             {[0.05, 0.12, 0.2, 0.3, 0.4].map(r => {
-                                                const burden = totalDividend * r;
-                                                const credit = Math.min(totalDividend * TAX_RATE, TAX_LIMIT);
-                                                const net = netDividend - burden + credit;
+                                                const burden = taxableDividend * r;
+                                                const credit = Math.min(taxableDividend * TAX_RATE, TAX_LIMIT);
+                                                const net = totalDividend - burden + credit;
                                                 const effYield = (net / (shares * selectedStock.price || 1)) * 100;
                                                 const isActive = r === userTaxRate;
 
@@ -529,11 +538,11 @@ export default function TaxPage() {
                                         </div>
                                         <div className="space-y-2 py-3 border-y border-white/5">
                                             <div className="flex justify-between text-[11px] font-bold">
-                                                <span className="text-slate-600">配息總領</span>
+                                                <span className="text-slate-600">應納稅基</span>
                                                 <span className="text-white font-mono">{formatCurrency(s.totalDividend)}</span>
                                             </div>
                                             <div className="flex justify-between text-[11px] font-bold">
-                                                <span className="text-slate-600">淨額實收</span>
+                                                <span className="text-slate-600">現金進帳</span>
                                                 <span className="text-rise font-mono">{formatCurrency(s.netDividend)}</span>
                                             </div>
                                         </div>

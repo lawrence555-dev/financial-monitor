@@ -8,9 +8,11 @@ interface PortfolioSummaryProps {
     totalValue: number;
     totalProfit: number;
     totalRoi: number;
+    totalReturnRoi: number;
+    estDividend: number;
 }
 
-export default function PortfolioSummary({ totalValue, totalProfit, totalRoi }: PortfolioSummaryProps) {
+export default function PortfolioSummary({ totalValue, totalProfit, totalRoi, totalReturnRoi, estDividend }: PortfolioSummaryProps) {
     const isProfit = totalProfit >= 0;
 
     return (
@@ -78,6 +80,14 @@ export default function PortfolioSummary({ totalValue, totalProfit, totalRoi }: 
                 )}>
                     {isProfit ? "+" : ""}{totalRoi.toFixed(2)}%
                 </div>
+                <div className="mt-1 text-[10px] font-bold text-blue-400/80 bg-blue-500/5 px-2 py-0.5 rounded inline-block uppercase tracking-wider">
+                    Total Return (含息): {totalReturnRoi >= 0 ? "+" : ""}{totalReturnRoi.toFixed(2)}%
+                </div>
+                {estDividend > 0 && (
+                    <div className="mt-2 text-[10px] font-black text-blue-400/80 bg-blue-500/5 px-2 py-1 rounded inline-block uppercase tracking-widest">
+                        Est. Dividend: +${estDividend.toLocaleString()}
+                    </div>
+                )}
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <PieChart size={64} />
                 </div>
