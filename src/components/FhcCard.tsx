@@ -83,32 +83,32 @@ export default function FhcCard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-                "glass group relative overflow-hidden p-5 transition-all duration-500 outline-none focus:outline-none",
-                isCheap && "after:absolute after:inset-0 after:rounded-[1rem] after:border-2 after:border-fall/30 after:animate-pulse"
+                "glass group relative overflow-hidden p-6 transition-all duration-500 outline-none focus:outline-none hover:glass-hover ring-1 ring-white/5",
+                isCheap && "after:absolute after:inset-0 after:rounded-[1.5rem] after:border-2 after:border-accent/30 after:animate-pulse"
             )}
         >
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-white/10 text-slate-400 uppercase tracking-widest">
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-white/5 text-slate-500 font-fira tracking-widest">
                             {id}
                         </span>
                         <span className={cn(
-                            "text-[10px] font-black px-1.5 py-0.5 rounded tracking-widest",
-                            category === "官股" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"
+                            "text-[9px] font-black px-1.5 py-0.5 rounded tracking-widest font-fira",
+                            category === "官股" ? "bg-accent/10 text-accent" : "bg-purple-500/10 text-purple-400"
                         )}>
                             {category}
                         </span>
                     </div>
-                    <h3 className="text-xl font-black text-white tracking-tighter">{name}</h3>
+                    <h3 className="text-2xl font-black text-white tracking-tighter font-archivo italic">{name}</h3>
                 </div>
                 <div className="text-right">
-                    <div className="text-2xl font-black font-mono tracking-tighter text-white">
+                    <div className="text-3xl font-black font-fira tracking-tighter text-white">
                         {price > 0 ? price.toFixed(2) : '---'}
                     </div>
                     <div className={cn(
-                        "flex items-center justify-end gap-1 text-[10px] font-bold",
-                        change > 0 ? "text-rise" : change < 0 ? "text-fall" : "text-slate-400"
+                        "flex items-center justify-end gap-1 text-[10px] font-black font-fira",
+                        change > 0 ? "text-rise drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]" : change < 0 ? "text-fall drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "text-slate-500"
                     )}>
                         {change > 0 ? <TrendingUp size={10} /> : change < 0 ? <TrendingDown size={10} /> : <Minus size={10} />}
                         <span>{typeof diff === 'number' && typeof change === 'number' ? `${change > 0 ? "+" : ""}${diff.toFixed(2)} (${change > 0 ? "+" : ""}${change.toFixed(2)}%)` : '---'}</span>
@@ -139,11 +139,11 @@ export default function FhcCard({
                                 content={({ active, payload }) => {
                                     if (active && payload && payload.length && payload[0].value !== null) {
                                         return (
-                                            <div className="glass bg-slate-950/90 border-white/10 p-2 rounded-lg shadow-2xl">
-                                                <p className="text-[10px] font-black text-white px-1 mb-1">
+                                            <div className="glass bg-slate-950/90 border-accent/20 p-2 rounded-lg shadow-[0_0_20px_rgba(34,211,238,0.1)]">
+                                                <p className="text-[10px] font-black text-white px-1 mb-1 font-fira tracking-tighter">
                                                     {Number(payload[0].value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </p>
-                                                <p className="text-[8px] font-bold text-slate-500 uppercase px-1">
+                                                <p className="text-[8px] font-black text-accent/50 uppercase px-1 font-fira tracking-widest">
                                                     {payload[0].payload.time}
                                                 </p>
                                             </div>
@@ -173,11 +173,11 @@ export default function FhcCard({
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">P/B位階</span>
+                <div className="flex items-center gap-1.5 font-fira">
+                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">P/B Percentile</span>
                     <span className={cn(
-                        "text-xs font-black font-mono",
-                        pbPercentile < 20 ? "text-fall" : pbPercentile > 80 ? "text-rise" : "text-slate-300"
+                        "text-xs font-black",
+                        pbPercentile < 20 ? "text-fall" : pbPercentile > 80 ? "text-rise" : "text-slate-400"
                     )}>
                         {pbPercentile}%
                     </span>

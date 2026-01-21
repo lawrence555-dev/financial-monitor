@@ -1,6 +1,7 @@
 "use client";
 
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const STOCKS = [
     { id: "2881", name: "富邦金", price: 95.5, diff: -1.5, change: -1.55, isUp: false },
@@ -20,22 +21,25 @@ const STOCKS = [
 
 export default function TickerTape() {
     return (
-        <div className="h-10 bg-slate-900 border-b border-white/5 flex items-center overflow-hidden whitespace-nowrap z-40">
+        <div className="h-10 bg-black/40 backdrop-blur-md border-b border-white/[0.03] flex items-center overflow-hidden whitespace-nowrap z-40">
             <div className="flex animate-[ticker_60s_linear_infinite] hover:[animation-play-state:paused]">
                 {[...STOCKS, ...STOCKS].map((stock, i) => (
-                    <div key={`${stock.id}-${i}`} className="flex items-center gap-2 px-6 border-r border-white/5 group bg-slate-900">
-                        <span className="text-slate-400 text-xs font-bold font-mono tracking-tight group-hover:text-white transition-colors">
+                    <div key={`${stock.id}-${i}`} className="flex items-center gap-2.5 px-8 border-r border-white/5 group">
+                        <span className="text-slate-600 text-[9px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
                             {stock.id}
                         </span>
-                        <span className="text-slate-100 text-sm font-black tracking-tight">
+                        <span className="text-slate-300 text-[11px] font-black tracking-tight font-archivo uppercase italic">
                             {stock.name}
                         </span>
-                        <span className="text-slate-100 text-sm font-mono font-bold">
-                            {stock.price}
+                        <span className="text-white text-xs font-fira font-black tracking-tighter">
+                            {stock.price.toFixed(2)}
                         </span>
-                        <div className={`flex items-center gap-0.5 text-xs font-bold leading-none ${stock.isUp ? 'text-rise' : 'text-fall'}`}>
-                            {stock.isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                            <span>{Math.abs(stock.change || 0).toFixed(1)}%</span>
+                        <div className={cn(
+                            "flex items-center gap-0.5 text-[9px] font-black font-fira leading-none px-1.5 py-0.5 rounded",
+                            stock.isUp ? 'text-rise bg-rise/5' : 'text-fall bg-fall/5'
+                        )}>
+                            {stock.isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                            <span>{Math.abs(stock.change || 0).toFixed(2)}%</span>
                         </div>
                     </div>
                 ))}

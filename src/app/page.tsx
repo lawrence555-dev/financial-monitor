@@ -7,7 +7,7 @@ import TickerTape from "@/components/TickerTape";
 import FhcCard from "@/components/FhcCard";
 import StockListItem from "@/components/StockListItem";
 import ChipChart from "@/components/ChipChart";
-import { Search, Bell, Filter, X, TrendingUp, TrendingDown, BrainCircuit, LayoutGrid, List } from "lucide-react";
+import { Search, Bell, Filter, X, TrendingUp, TrendingDown, BrainCircuit, LayoutGrid, List, Clock, Globe, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/Toast";
@@ -316,14 +316,24 @@ export default function DashboardPage() {
           {/* Dashboard Header */}
           <div className="flex justify-between items-center mb-10">
             <div>
-              <h1 className="text-4xl font-black text-white tracking-tighter mb-2">
-                「金控全能價值導航」 <span className="text-rise">13</span>
+              <h1 className="text-5xl font-black text-white tracking-tighter mb-3 font-archivo italic">
+                CORTEX <span className="text-accent">X13</span>
               </h1>
               {mounted && (
-                <p className="text-slate-400 text-sm font-bold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rise animate-pulse" />
-                  市場即時數據監控中 · {currentTime.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false })} (台北時間)
-                </p>
+                <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black font-fira uppercase tracking-widest">
+                  <div className="flex items-center gap-1.5 bg-accent/10 text-accent px-2 py-1 rounded-md border border-accent/20">
+                    <ShieldCheck size={12} />
+                    <span>SECURE NODE</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock size={12} className="text-accent/50" />
+                    <span>SYSTIME: {currentTime.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe size={12} className="text-accent/50" />
+                    <span>REGION: ASIA/TAIPEI</span>
+                  </div>
+                </div>
               )}
             </div>
 
@@ -394,50 +404,47 @@ export default function DashboardPage() {
                 : (selectedId ? "xl:col-span-12 xl:pr-[420px]" : "xl:col-span-12")
             )}>
               {viewMode === 'grid' ? (
-                // Grid Mode
+                // Bento Grid Mode
                 <div className={cn(
                   "grid gap-6",
-                  selectedId ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+                  selectedId
+                    ? "grid-cols-1 md:grid-cols-2"
+                    : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
                 )}>
-                  {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
+                  {filteredStocks.map((stock, idx) => (
+                    <div
+                      key={stock.id}
+                      onClick={() => handleStockClick(stock.id)}
+                      className={cn(
+                        "cursor-pointer",
+                        !selectedId && (idx === 0 || idx === 7) ? "md:col-span-2 md:row-span-1" : ""
+                      )}
+                    >
                       <FhcCard
                         {...stock}
                         pbPercentile={stock.pbPercentile}
                       />
                     </div>
                   ))}
+
+                  {!selectedId && (
+                    <div className="glass bg-gradient-to-br from-accent/20 via-accent/5 to-transparent border-accent/30 p-8 flex flex-col justify-center items-center text-center group cursor-pointer hover:border-accent transition-all md:col-span-2">
+                      <div className="w-20 h-20 bg-accent/20 rounded-3xl flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+                        <BrainCircuit size={40} />
+                      </div>
+                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase">Neural Value Tracking</h3>
+                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed mb-8 opacity-60">
+                        Institutional P/B divergence detected.<br />Deploy automated alerts on 5% percentile crosses.
+                      </p>
+                      <Link href="/subscription" className="w-full max-w-sm">
+                        <button className="w-full py-4 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all uppercase tracking-widest text-[11px]">
+                          Initialize Elite Node
+                        </button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : (
-                // List Mode
-                <div className="flex flex-col gap-4">
-                  {filteredStocks.map((stock) => (
-                    <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
-                      <StockListItem
-                        {...stock}
-                        pbPercentile={stock.pbPercentile}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {!selectedId && (
-                <div className="glass bg-gradient-to-br from-rise/10 to-transparent border-rise/20 p-8 flex flex-col justify-center items-center text-center group cursor-pointer hover:border-rise transition-all">
-                  <div className="w-16 h-16 bg-rise/20 rounded-2xl flex items-center justify-center mb-6 text-rise group-hover:scale-110 transition-transform">
-                    <Bell size={32} />
-                  </div>
-                  <h3 className="text-xl font-black text-white mb-2">啟動 AI 關鍵價位追蹤</h3>
-                  <p className="text-slate-400 text-xs font-bold leading-relaxed mb-6">
-                    當 P/B 位階低於歷史 5% 時，<br />立即發送通知至您的 LINE 或 Telegram。
-                  </p>
-                  <Link href="/subscription" className="w-full">
-                    <button className="w-full py-4 bg-rise text-white rounded-xl font-black shadow-lg shadow-rise/20 hover:scale-[1.02] active:scale-95 transition-all">
-                      升級專業版訂閱
-                    </button>
-                  </Link>
-                </div>
-              )}
             </div>
 
             {/* Selected Stock Detail Panel (Multi-Chart Linkage) */}
@@ -459,97 +466,95 @@ export default function DashboardPage() {
                     </button>
                   </div>
 
-                  <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-8 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-10">
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        籌碼流向 (10D)
-                        {isChipLoading && <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping" />}
+                      <p className="text-[10px] font-black text-accent/40 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                        CHIP FLOW MATRIX (10D)
+                        {isChipLoading && <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping" />}
                       </p>
-                      <div className={cn("transition-opacity duration-300", isChipLoading ? "opacity-50" : "opacity-100")}>
+                      <div className={cn("transition-opacity duration-300", isChipLoading ? "opacity-30" : "opacity-100")}>
                         <ChipChart data={selectedStock.chipData} />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div className={cn("p-4 bg-white/5 rounded-2xl border transition-all", isChipLoading ? "border-blue-500/20 animate-pulse" : "border-white/5")}>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">三大法人 (15D)</p>
-                        <p className="text-lg font-black text-blue-400 font-mono tracking-tighter">
+                      <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-accent/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">Institutions (15D)</p>
+                        <p className="text-2xl font-black text-accent font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.institutional, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1">張</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase">Units</span>
                         </p>
                       </div>
-                      <div className={cn("p-4 bg-white/5 rounded-2xl border transition-all", isChipLoading ? "border-purple-500/20 animate-pulse" : "border-white/5")}>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">官股行庫 (15D)</p>
-                        <p className="text-lg font-black text-purple-400 font-mono tracking-tighter">
+                      <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-fall/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">Government (15D)</p>
+                        <p className="text-2xl font-black text-fall font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.government, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1">張</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase">Units</span>
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <BrainCircuit size={14} className="text-rise transition-all" />
-                        AI 法說會情緒摘要
-                        {isAiLoading && <span className="w-1.5 h-1.5 bg-rise rounded-full animate-ping ml-1" />}
+                      <p className="text-[10px] font-black text-accent/40 uppercase tracking-[0.3em] flex items-center gap-2">
+                        GEMINI 1.5 PRO ANALYSIS
+                        {isAiLoading && <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping ml-1" />}
                       </p>
                       <div className={cn(
-                        "p-5 rounded-2xl border transition-all duration-700 leading-relaxed text-slate-200 text-xs font-bold",
-                        isAiLoading ? "bg-white/5 border-white/5 animate-pulse" : "bg-gradient-to-br from-rise/10 to-transparent border-rise/10"
+                        "p-6 rounded-[2rem] border transition-all duration-700 leading-relaxed text-slate-300 text-[11px] font-medium font-space",
+                        isAiLoading ? "bg-white/[0.02] border-white/5 animate-pulse" : "bg-gradient-to-br from-accent/5 to-transparent border-white/5"
                       )}>
-                        {isAiLoading ? "正在透過 Gemini 1.5 Pro 分析最新法說會資料..." : (
+                        {isAiLoading ? "Analyzing real-time market sentiment and financial disclosures..." : (
                           aiSummary ? (
-                            <div className="space-y-3">
-                              <p>「{aiSummary.summary}」</p>
-                              <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                                <span className="text-[10px] uppercase font-black text-slate-500">市場情緒：</span>
-                                <span className={cn(
-                                  "text-[10px] font-black",
-                                  aiSummary.sentimentScore > 0 ? "text-rise" : "text-fall"
-                                )}>
-                                  {aiSummary.sentimentScore > 0 ? "+" : ""}{aiSummary.sentimentScore}
-                                </span>
+                            <div className="space-y-4">
+                              <p className="leading-6">「{aiSummary.summary}」</p>
+                              <div className="flex items-center gap-4 pt-4 border-t border-white/5 mt-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[9px] uppercase font-black text-slate-500 font-fira">Sentiment Map</span>
+                                  <span className={cn(
+                                    "text-xs font-black font-fira px-2 py-0.5 rounded",
+                                    aiSummary.sentimentScore > 0 ? "bg-rise/10 text-rise" : "bg-fall/10 text-fall"
+                                  )}>
+                                    {aiSummary.sentimentScore > 0 ? "+" : ""}{aiSummary.sentimentScore}
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          ) : "尚無分析數據。"
+                          ) : "Insufficient data for neural synthesis."
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-auto space-y-4">
-                    <div className="flex justify-between items-center px-2">
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">散戶 FOMO 評分</span>
-                      <span className="text-xs font-black text-fall font-mono">
-                        {(() => {
-                          // 真實 FOMO 計算：基於波動率和相對強弱
-                          const volatility = Math.abs(selectedStock.change);  // 當日波動
-                          const priceDeviation = selectedStock.isUp ? selectedStock.change : 0;  // 上漲才計入
-
-                          // FOMO 公式 = 波動度 × 40 + 上漲強度 × 30 + 基準值
-                          const fomoScore = Math.min(100, Math.round(
-                            volatility * 40 +  // 波動越大散戶越容易 FOMO
-                            priceDeviation * 30 +  // 上漲時散戶更容易追高
-                            20  // 基準值
-                          ));
-
-                          const level = fomoScore > 70 ? " (極高)" : fomoScore > 50 ? " (高)" : " (中)";
-                          return `${fomoScore}/100${level}`;
-                        })()}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-fall" style={{
-                        width: `${Math.min(100, Math.round(
-                          Math.abs(selectedStock.change) * 40 +
-                          (selectedStock.isUp ? selectedStock.change * 30 : 0) +
-                          20
-                        ))}%`
-                      }} />
+                  <div className="mt-auto space-y-6 pt-6 border-t border-white/5">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center px-1">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-fira">Retail FOMO Index</span>
+                        <span className={cn(
+                          "text-xs font-black font-fira",
+                          Math.abs(selectedStock.change) > 2 ? "text-rise" : "text-fall"
+                        )}>
+                          {(() => {
+                            const volatility = Math.abs(selectedStock.change);
+                            const priceDeviation = selectedStock.isUp ? selectedStock.change : 0;
+                            const fomoScore = Math.min(100, Math.round(volatility * 40 + priceDeviation * 30 + 20));
+                            const level = fomoScore > 70 ? " (EXTREME)" : fomoScore > 50 ? " (HIGH)" : " (NOMINAL)";
+                            return `${fomoScore}/100 ${level}`;
+                          })()}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-rise shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all duration-1000" style={{
+                          width: `${Math.min(100, Math.round(
+                            Math.abs(selectedStock.change) * 40 +
+                            (selectedStock.isUp ? selectedStock.change * 30 : 0) +
+                            20
+                          ))}%`
+                        }} />
+                      </div>
                     </div>
                     <Link href={`/report/${selectedStock.id}`} className="w-full">
-                      <button className="w-full py-4 bg-rise text-white rounded-xl font-black shadow-lg shadow-rise/20 hover:scale-[1.02] active:scale-95 transition-all">
-                        查看完整詳細報告
+                      <button className="w-full py-5 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all text-[11px] uppercase tracking-widest">
+                        Access Deep Intelligence Report
                       </button>
                     </Link>
                   </div>

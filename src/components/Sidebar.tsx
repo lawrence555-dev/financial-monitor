@@ -20,8 +20,8 @@ export default function Sidebar() {
     return (
         <aside className="fixed left-0 top-0 bottom-0 w-20 flex flex-col items-center py-8 bg-[#020617] border-r border-white/5 z-50">
             <div className="mb-12">
-                <div className="w-10 h-10 bg-rise rounded-xl flex items-center justify-center font-black text-white text-xl italic shadow-lg shadow-rise/20">
-                    F
+                <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center font-black text-slate-950 text-2xl italic shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                    C
                 </div>
             </div>
 
@@ -33,19 +33,19 @@ export default function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "group relative p-3 rounded-2xl transition-all duration-300",
+                                "group relative p-3.5 rounded-2xl transition-all duration-500",
                                 isActive
-                                    ? "bg-white/10 text-white"
-                                    : "text-slate-500 hover:text-slate-200 hover:bg-white/5"
+                                    ? "bg-accent/10 text-accent shadow-[inset_0_0_15px_rgba(34,211,238,0.1)]"
+                                    : "text-slate-500 hover:text-white hover:bg-white/5"
                             )}
                         >
-                            <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                            <span className="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                            <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} className={cn("transition-transform duration-500", isActive && "scale-110")} />
+                            <span className="absolute left-full ml-6 px-3 py-1.5 bg-slate-900 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-50 shadow-2xl">
                                 {item.label}
                             </span>
                             {isActive && (
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 whitespace-nowrap">
-                                    <div className="w-1.5 h-6 bg-rise rounded-full" />
+                                    <div className="w-1.5 h-7 bg-accent rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
                                 </div>
                             )}
                         </Link>
