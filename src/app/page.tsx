@@ -342,8 +342,8 @@ export default function DashboardPage() {
           {/* Dashboard Header */}
           <div className="flex justify-between items-center mb-10">
             <div>
-              <h1 className="text-5xl font-black text-white tracking-tighter mb-3 font-archivo italic">
-                CORTEX <span className="text-accent">X13</span>
+              <h1 className="text-5xl font-black text-white tracking-tighter mb-3 font-archivo">
+                金控股 <span className="text-accent">監控系統</span>
               </h1>
               {mounted && (
                 <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black font-fira uppercase tracking-widest">
@@ -468,8 +468,8 @@ export default function DashboardPage() {
                   )}
                 </div>
               ) : (
-                // 列表模式 - 極致密度
-                <div className="flex flex-col gap-2">
+                // 列表模式 - 雙欄極致密度
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {filteredStocks.map((stock) => (
                     <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
                       <StockListItem

@@ -28,7 +28,7 @@ export default function TickerTape() {
                         <span className="text-mute text-[10px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
                             {stock.id}
                         </span>
-                        <span className="text-[11px] font-black tracking-tight font-archivo italic">
+                        <span className="text-[11px] font-black tracking-tight font-archivo">
                             {stock.name}
                         </span>
                         <span className="text-xs font-fira font-black tracking-tighter">

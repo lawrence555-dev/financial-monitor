@@ -100,7 +100,7 @@ export default function FhcCard({
                             {category}
                         </span>
                     </div>
-                    <h3 className="text-2xl font-black text-fg tracking-tighter font-archivo italic">{name}</h3>
+                    <h3 className="text-2xl font-black text-fg tracking-tighter font-archivo">{name}</h3>
                 </div>
                 <div className="text-right">
                     <div className="text-3xl font-black font-fira tracking-tighter text-fg">
