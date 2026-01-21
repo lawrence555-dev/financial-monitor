@@ -26,7 +26,7 @@ export default function TickerTape() {
                 {[...STOCKS, ...STOCKS].map((stock, i) => (
                     <div key={`${stock.id}-${i}`} className="flex items-center gap-6 px-8 border-r border-main h-full group opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 whitespace-nowrap">
                         <span className="text-mute text-[10px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
-                            {stock.id}
+                            代號 {stock.id}
                         </span>
                         <span className="text-[11px] font-black tracking-tight font-archivo whitespace-nowrap">
                             {stock.name}
