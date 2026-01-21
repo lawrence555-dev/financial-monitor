@@ -174,7 +174,7 @@ export default function FhcCard({
 
             <div className="flex justify-between items-center pt-4 border-t border-white/5">
                 <div className="flex items-center gap-1.5 font-fira">
-                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">P/B Percentile</span>
+                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">P/B 歷史分位</span>
                     <span className={cn(
                         "text-xs font-black",
                         pbPercentile < 20 ? "text-fall" : pbPercentile > 80 ? "text-rise" : "text-slate-400"

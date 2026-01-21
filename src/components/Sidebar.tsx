@@ -14,8 +14,28 @@ const NAV_ITEMS = [
     { icon: Settings, label: "系統設定", href: "/settings" },
 ];
 
+import { Sun, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
+
 export default function Sidebar() {
     const pathname = usePathname();
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+        if (savedTheme) {
+            setTheme(savedTheme);
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+        window.dispatchEvent(new Event('theme-change'));
+    };
 
     return (
         <aside className="fixed left-0 top-0 bottom-0 w-20 flex flex-col items-center py-8 bg-[#020617] border-r border-white/5 z-50">
@@ -53,10 +73,15 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            <div className="mt-auto">
-                <button className="w-10 h-10 rounded-full border border-white/10 overflow-hidden hover:border-white/30 transition-colors">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
+            <div className="mt-auto flex flex-col items-center gap-6 pb-4">
+                <button
+                    onClick={toggleTheme}
+                    className="p-3.5 rounded-2xl text-slate-500 hover:text-white hover:bg-white/5 transition-all duration-300"
+                    title={theme === 'light' ? "切換至暗色模式" : "切換至明亮模式"}
+                >
+                    {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
                 </button>
+                <div className="w-8 h-8 bg-slate-900 rounded-full border border-white/5" />
             </div>
         </aside>
     );

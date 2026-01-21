@@ -46,6 +46,7 @@ export default function DashboardPage() {
     }))
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [aiSummary, setAiSummary] = useState<{ summary: string; sentimentScore: number; highlight: string } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -183,6 +184,24 @@ export default function DashboardPage() {
   useEffect(() => {
     localStorage.setItem('viewMode', viewMode);
   }, [viewMode]);
+
+  // Theme Management
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
   // Data backfill: Check for missing 13:30 data after market close
   useEffect(() => {
@@ -323,15 +342,15 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black font-fira uppercase tracking-widest">
                   <div className="flex items-center gap-1.5 bg-accent/10 text-accent px-2 py-1 rounded-md border border-accent/20">
                     <ShieldCheck size={12} />
-                    <span>SECURE NODE</span>
+                    <span>安全節點</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={12} className="text-accent/50" />
-                    <span>SYSTIME: {currentTime.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    <span>系統時間: {currentTime.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Globe size={12} className="text-accent/50" />
-                    <span>REGION: ASIA/TAIPEI</span>
+                    <span>地區: 亞洲/台北</span>
                   </div>
                 </div>
               )}
@@ -432,13 +451,13 @@ export default function DashboardPage() {
                       <div className="w-20 h-20 bg-accent/20 rounded-3xl flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform shadow-[0_0_30px_rgba(34,211,238,0.2)]">
                         <BrainCircuit size={40} />
                       </div>
-                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase">Neural Value Tracking</h3>
+                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase italic">神經價值追蹤</h3>
                       <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed mb-8 opacity-60">
-                        Institutional P/B divergence detected.<br />Deploy automated alerts on 5% percentile crosses.
+                        偵測到機構 P/B 乖離偏移。<br />已在 5% 分位數交叉位點佈署自動警報。
                       </p>
                       <Link href="/subscription" className="w-full max-w-sm">
                         <button className="w-full py-4 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all uppercase tracking-widest text-[11px]">
-                          Initialize Elite Node
+                          啟動菁英節點
                         </button>
                       </Link>
                     </div>
@@ -502,7 +521,7 @@ export default function DashboardPage() {
                   <div className="space-y-8 overflow-y-auto pr-2 custom-scrollbar flex-1 pb-10">
                     <div>
                       <p className="text-[10px] font-black text-accent/40 uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
-                        CHIP FLOW MATRIX (10D)
+                        籌碼流向矩陣 (10日)
                         {isChipLoading && <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping" />}
                       </p>
                       <div className={cn("transition-opacity duration-300", isChipLoading ? "opacity-30" : "opacity-100")}>
@@ -512,37 +531,37 @@ export default function DashboardPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-accent/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">Institutions (15D)</p>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">機構法人 (15日)</p>
                         <p className="text-2xl font-black text-accent font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.institutional, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase">Units</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">股</span>
                         </p>
                       </div>
                       <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-fall/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">Government (15D)</p>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">政府官股 (15日)</p>
                         <p className="text-2xl font-black text-fall font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.government, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase">Units</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">股</span>
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       <p className="text-[10px] font-black text-accent/40 uppercase tracking-[0.3em] flex items-center gap-2">
-                        GEMINI 1.5 PRO ANALYSIS
+                        GEMINI 1.5 PRO 深度分析
                         {isAiLoading && <span className="w-1.5 h-1.5 bg-accent rounded-full animate-ping ml-1" />}
                       </p>
                       <div className={cn(
                         "p-6 rounded-[2rem] border transition-all duration-700 leading-relaxed text-slate-300 text-[11px] font-medium font-space",
                         isAiLoading ? "bg-white/[0.02] border-white/5 animate-pulse" : "bg-gradient-to-br from-accent/5 to-transparent border-white/5"
                       )}>
-                        {isAiLoading ? "Analyzing real-time market sentiment and financial disclosures..." : (
+                        {isAiLoading ? "正在分析即時市場情緒與財務揭露資訊..." : (
                           aiSummary ? (
                             <div className="space-y-4">
                               <p className="leading-6">「{aiSummary.summary}」</p>
                               <div className="flex items-center gap-4 pt-4 border-t border-white/5 mt-4">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[9px] uppercase font-black text-slate-500 font-fira">Sentiment Map</span>
+                                  <span className="text-[9px] uppercase font-black text-slate-500 font-fira">情緒地圖</span>
                                   <span className={cn(
                                     "text-xs font-black font-fira px-2 py-0.5 rounded",
                                     aiSummary.sentimentScore > 0 ? "bg-rise/10 text-rise" : "bg-fall/10 text-fall"
@@ -552,7 +571,7 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                             </div>
-                          ) : "Insufficient data for neural synthesis."
+                          ) : "數據不足以進行神經合成分析。"
                         )}
                       </div>
                     </div>
@@ -561,7 +580,7 @@ export default function DashboardPage() {
                   <div className="mt-auto space-y-6 pt-6 border-t border-white/5">
                     <div className="space-y-3">
                       <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-fira">Retail FOMO Index</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-fira">散戶 FOMO 指數</span>
                         <span className={cn(
                           "text-xs font-black font-fira",
                           Math.abs(selectedStock.change) > 2 ? "text-rise" : "text-fall"
@@ -570,7 +589,7 @@ export default function DashboardPage() {
                             const volatility = Math.abs(selectedStock.change);
                             const priceDeviation = selectedStock.isUp ? selectedStock.change : 0;
                             const fomoScore = Math.min(100, Math.round(volatility * 40 + priceDeviation * 30 + 20));
-                            const level = fomoScore > 70 ? " (EXTREME)" : fomoScore > 50 ? " (HIGH)" : " (NOMINAL)";
+                            const level = fomoScore > 70 ? " (極端)" : fomoScore > 50 ? " (偏高)" : " (正常)";
                             return `${fomoScore}/100 ${level}`;
                           })()}
                         </span>
@@ -587,7 +606,7 @@ export default function DashboardPage() {
                     </div>
                     <Link href={`/report/${selectedStock.id}`} className="w-full">
                       <button className="w-full py-5 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all text-[11px] uppercase tracking-widest">
-                        Access Deep Intelligence Report
+                        開啟深度情報報告
                       </button>
                     </Link>
                   </div>

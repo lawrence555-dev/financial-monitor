@@ -41,6 +41,9 @@ export default function TickerTape() {
                             {stock.isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                             <span>{Math.abs(stock.change || 0).toFixed(2)}%</span>
                         </div>
+                        <span className="text-[8px] font-black text-slate-700 font-archivo tracking-widest ml-1 opacity-50">
+                            即時數據
+                        </span>
                     </div>
                 ))}
             </div>
