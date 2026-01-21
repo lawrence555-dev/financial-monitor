@@ -2,69 +2,75 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700;900&family=Space+Grotesk:wght@400;500;700&family=Fira+Code:wght@400;500;700&display=swap');
 
 @theme {
-  --color-background-dark: #020617;
-  --color-foreground-dark: #f8fafc;
-  --color-background-light: #f8fafc;
-  --color-foreground-light: #0f172a;
-
+  /* High-Performance Fintech Palette */
   --color-rise: #f43f5e;
-  /* Cyber-Wealth Rose */
   --color-fall: #10b981;
-  /* Precise Emerald */
-  --color-accent: #22d3ee;
-  /* Electric Cyan */
-  --color-accent-dark: #0891b2;
-
-  --color-card-bg: var(--color-card-bg-dyn);
-  --color-card-border: var(--color-card-border-dyn);
+  --color-accent: var(--accent);
 
   --font-archivo: 'Archivo', sans-serif;
   --font-space: 'Space Grotesk', sans-serif;
   --font-fira: 'Fira Code', monospace;
+
+  /* Semantic Transitions */
+  --transition-theme: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --color-card-bg-dyn: rgba(255, 255, 255, 0.8);
-  --color-card-border-dyn: rgba(0, 0, 0, 0.05);
-  --color-accent-dyn: #0891b2;
+  /* Light Mode (Modern Institution) */
+  --bg: #f8fafc;
+  --fg: #0f172a;
+  --fg-mute: #64748b;
+  --accent: #0891b2;
+  --border: rgba(15, 23, 42, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(15, 23, 42, 0.05);
+  --glass-hover: rgba(15, 23, 42, 0.02);
+  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  --glow: rgba(8, 145, 178, 0.1);
 }
 
 [data-theme='dark'] {
-  --background: #020617;
-  --foreground: #f8fafc;
-  --color-card-bg-dyn: rgba(15, 23, 42, 0.4);
-  --color-card-border-dyn: rgba(255, 255, 255, 0.05);
-  --color-accent-dyn: #22d3ee;
+  /* Dark Mode (Cyber-Wealth) */
+  --bg: #020617;
+  --fg: #f1f5f9;
+  --fg-mute: #94a3b8;
+  --accent: #22d3ee;
+  --border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-hover: rgba(255, 255, 255, 0.03);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glow: rgba(34, 211, 238, 0.15);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+  transition: background-color 0.5s var(--transition-theme), color 0.5s var(--transition-theme);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @utility glass {
-  background: var(--color-card-bg);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--color-card-border);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s var(--transition-theme);
 }
 
 @utility glass-hover {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(34, 211, 238, 0.1);
+  background: var(--glass-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--glow);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -72,12 +78,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--border);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--fg-mute);
 }
 
 @keyframes ticker {
@@ -92,4 +98,17 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Unified Text Colors */
+.text-mute {
+  color: var(--fg-mute);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.border-main {
+  border-color: var(--border);
 }

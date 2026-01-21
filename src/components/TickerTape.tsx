@@ -21,17 +21,17 @@ const STOCKS = [
 
 export default function TickerTape() {
     return (
-        <div className="h-10 bg-black/40 backdrop-blur-md border-b border-white/[0.03] flex items-center overflow-hidden whitespace-nowrap z-40">
-            <div className="flex animate-[ticker_60s_linear_infinite] hover:[animation-play-state:paused]">
+        <div className="h-10 glass rounded-none border-x-0 border-t-0 border-main overflow-hidden flex items-center z-40 bg-transparent">
+            <div className="flex animate-[ticker_60s_linear_infinite] hover:[animation-play-state:paused] h-full">
                 {[...STOCKS, ...STOCKS].map((stock, i) => (
-                    <div key={`${stock.id}-${i}`} className="flex items-center gap-2.5 px-8 border-r border-white/5 group">
-                        <span className="text-slate-600 text-[9px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
+                    <div key={`${stock.id}-${i}`} className="flex items-center gap-6 px-8 border-r border-main h-full group opacity-90 hover:opacity-100 transition-opacity">
+                        <span className="text-mute text-[10px] font-black font-fira tracking-widest group-hover:text-accent transition-colors">
                             {stock.id}
                         </span>
-                        <span className="text-slate-300 text-[11px] font-black tracking-tight font-archivo uppercase italic">
+                        <span className="text-[11px] font-black tracking-tight font-archivo italic">
                             {stock.name}
                         </span>
-                        <span className="text-white text-xs font-fira font-black tracking-tighter">
+                        <span className="text-xs font-fira font-black tracking-tighter">
                             {stock.price.toFixed(2)}
                         </span>
                         <div className={cn(
@@ -41,7 +41,7 @@ export default function TickerTape() {
                             {stock.isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                             <span>{Math.abs(stock.change || 0).toFixed(2)}%</span>
                         </div>
-                        <span className="text-[8px] font-black text-slate-700 font-archivo tracking-widest ml-1 opacity-50">
+                        <span className="text-[8px] font-black text-mute opacity-40 font-archivo tracking-[0.2em]">
                             即時數據
                         </span>
                     </div>

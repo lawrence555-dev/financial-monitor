@@ -426,19 +426,18 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
             {/* Stock Display Area */}
             <div className={cn(
               "transition-all duration-500",
-              // List mode: always full width, Grid mode: add padding for fixed panel
               viewMode === 'list'
                 ? "xl:col-span-12"
                 : (selectedId ? "xl:col-span-12 xl:pr-[420px]" : "xl:col-span-12")
             )}>
               {viewMode === 'grid' ? (
-                // Bento Grid Mode
+                // Bento Grid Mode - High Density
                 <div className={cn(
-                  "grid gap-6",
+                  "grid gap-4 auto-rows-min",
                   selectedId
                     ? "grid-cols-1 md:grid-cols-2"
                     : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
@@ -449,7 +448,7 @@ export default function DashboardPage() {
                       onClick={() => handleStockClick(stock.id)}
                       className={cn(
                         "cursor-pointer",
-                        !selectedId && (idx === 0 || idx === 7) ? "md:col-span-2 md:row-span-1" : ""
+                        !selectedId && (idx === 0 || idx === 3 || idx === 6) ? "md:col-span-2" : ""
                       )}
                     >
                       <FhcCard
@@ -459,26 +458,18 @@ export default function DashboardPage() {
                     </div>
                   ))}
 
-                  {!selectedId && (
-                    <div className="glass bg-gradient-to-br from-accent/20 via-accent/5 to-transparent border-accent/30 p-8 flex flex-col justify-center items-center text-center group cursor-pointer hover:border-accent transition-all md:col-span-2">
-                      <div className="w-20 h-20 bg-accent/20 rounded-3xl flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-transform shadow-[0_0_30px_rgba(34,211,238,0.2)]">
-                        <BrainCircuit size={40} />
-                      </div>
-                      <h3 className="text-2xl font-black text-white mb-2 font-archivo uppercase italic">精準價值雷達</h3>
-                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed mb-8 opacity-60">
-                        偵測到法人估值乖離趨勢。<br />已在 5% P/B 位階交叉位點佈署監控警報。
+                  {!selectedId && filteredStocks.length % 2 !== 0 && (
+                    <div className="glass bg-accent/5 border-dashed border-accent/20 flex flex-col justify-center items-center text-center p-6 min-h-[200px]">
+                      <BrainCircuit size={32} className="text-accent/40 mb-3" />
+                      <p className="text-[10px] font-black text-mute uppercase tracking-widest leading-relaxed">
+                        佈署更多監控點位...
                       </p>
-                      <Link href="/subscription" className="w-full max-w-sm">
-                        <button className="w-full py-4 bg-accent text-slate-950 rounded-2xl font-black shadow-lg shadow-accent/20 hover:bg-white active:scale-95 transition-all uppercase tracking-widest text-[11px]">
-                          升級進階專業版
-                        </button>
-                      </Link>
                     </div>
                   )}
                 </div>
               ) : (
-                // 列表模式
-                <div className="flex flex-col gap-3">
+                // 列表模式 - 極致密度
+                <div className="flex flex-col gap-2">
                   {filteredStocks.map((stock) => (
                     <div key={stock.id} onClick={() => handleStockClick(stock.id)} className="cursor-pointer">
                       <StockListItem
