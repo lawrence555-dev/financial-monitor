@@ -17,7 +17,7 @@ export const FHC_STOCKS: StockBase[] = [
     { id: "2884", name: "玉山金", category: "民營", cashDividend: 1.2, stockDividend: 0.3, estimatedBookValue: 16.2, minPb: 1.2, maxPb: 2.3 },
     { id: "2885", name: "元大金", category: "民營", cashDividend: 1.1, stockDividend: 0.2, estimatedBookValue: 24.5, minPb: 0.9, maxPb: 1.7 },
     { id: "2886", name: "兆豐金", category: "官股", cashDividend: 1.5, stockDividend: 0.3, estimatedBookValue: 26.8, minPb: 1.1, maxPb: 1.9 },
-    { id: "2887", name: "台新金", category: "民營", cashDividend: 0.6, stockDividend: 0.4, estimatedBookValue: 17.2, minPb: 0.8, maxPb: 1.4 },
+    { id: "2887", name: "台新新光金", category: "民營", cashDividend: 0.6, stockDividend: 0.4, estimatedBookValue: 17.2, minPb: 0.8, maxPb: 1.4 },
     { id: "2889", name: "國票金", category: "民營", cashDividend: 0.7, stockDividend: 0, estimatedBookValue: 12.4, minPb: 0.9, maxPb: 1.3 },
     { id: "2890", name: "永豐金", category: "民營", cashDividend: 0.75, stockDividend: 0.25, estimatedBookValue: 16.5, minPb: 0.9, maxPb: 1.6 },
     { id: "2891", name: "中信金", category: "民營", cashDividend: 1.8, stockDividend: 0, estimatedBookValue: 22.8, minPb: 1.0, maxPb: 1.8 },
