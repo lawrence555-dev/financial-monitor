@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Download, Share2, Bell } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line } from "recharts";
 import { cn } from "@/lib/utils";
+import TradingChart from "@/components/TradingChart";
 
 // 金控基礎資料
 const FHC_INFO: Record<string, { name: string; category: string; dividend: number }> = {
@@ -258,31 +259,13 @@ export default function ReportPage() {
                 <div className="grid grid-cols-2 gap-6 mb-8">
                     {/* 價格走勢 */}
                     <div className="p-5 glass bg-slate-900/50 rounded-xl border border-white/5">
-                        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">今日價格走勢</div>
-                        <div className="h-48">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={priceHistory}>
-                                    <defs>
-                                        <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={stockData?.isUp ? "#ef4444" : "#22c55e"} stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor={stockData?.isUp ? "#ef4444" : "#22c55e"} stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="time" stroke="#64748b" fontSize={10} />
-                                    <YAxis domain={['dataMin - 0.2', 'dataMax + 0.2']} stroke="#64748b" fontSize={10} />
-                                    <Tooltip
-                                        contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px' }}
-                                        labelStyle={{ color: '#94a3b8' }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke={stockData?.isUp ? "#ef4444" : "#22c55e"}
-                                        strokeWidth={2}
-                                        fill="url(#priceGradient)"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                        <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">今日價格走勢 (Real-time)</div>
+                        <div className="h-64 -mx-2">
+                            <TradingChart
+                                data={priceHistory}
+                                isUp={stockData?.isUp ?? false}
+                                height={256}
+                            />
                         </div>
                     </div>
 
