@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createChart, ColorType, IChartApi, Time, AreaSeries, AreaSeriesPartialOptions } from "lightweight-charts";
+import { createChart, ColorType, IChartApi, Time, AreaSeries, AreaSeriesPartialOptions, LineWidth } from "lightweight-charts";
 import { cn } from "@/lib/utils";
 
 interface TradingChartProps {
@@ -103,7 +103,7 @@ export default function TradingChart({
             lineColor: lineColor,
             topColor: topColor,
             bottomColor: bottomColor,
-            lineWidth: lineWidth,
+            lineWidth: lineWidth as LineWidth,
             priceFormat: {
                 type: 'price',
                 precision: 2,
