@@ -192,14 +192,16 @@ export default function ValuationPage() {
                                             <span className="text-slate-500">當前股價</span>
                                             <span className="text-white font-mono">{selectedStock.price} TWD</span>
                                         </div>
-                                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
-                                            <div className="bg-emerald-500" style={{ width: '25%' }} />
-                                            <div className="bg-slate-700" style={{ width: '50%' }} />
-                                            <div className="bg-rose-500" style={{ width: '25%' }} />
+                                        <div className="w-full h-1.5 relative my-2">
+                                            <div className="absolute inset-0 rounded-full overflow-hidden flex">
+                                                <div className="bg-emerald-500" style={{ width: '25%' }} />
+                                                <div className="bg-slate-700" style={{ width: '50%' }} />
+                                                <div className="bg-rose-500" style={{ width: '25%' }} />
+                                            </div>
                                             <motion.div
                                                 initial={{ left: 0 }}
                                                 animate={{ left: `${selectedStock.pbPercentile}%` }}
-                                                className="absolute w-3 h-3 bg-white border-2 border-slate-900 rounded-full -translate-x-1/2 -mt-[3px] shadow-lg shadow-white/20 transition-all duration-700"
+                                                className="absolute w-3 h-3 bg-white border-2 border-slate-900 rounded-full -translate-x-1/2 top-1/2 -translate-y-1/2 shadow-lg shadow-white/20 transition-all duration-700 z-10"
                                             />
                                         </div>
                                     </div>
@@ -237,7 +239,7 @@ export default function ValuationPage() {
                                             <ExternalLink size={20} />
                                         </button>
                                     </div>
-                                    <Link href={`/report/${selectedStock.id}`} className="w-full">
+                                    <Link href={`/chips/${selectedStock.id}`} className="w-full">
                                         <button className="w-full py-4 bg-rise hover:bg-rose-600 text-white rounded-2xl font-black shadow-xl shadow-rise/20 transition-all active:scale-95 group overflow-hidden relative">
                                             <span className="relative z-10 flex items-center justify-center gap-2">
                                                 深入籌碼追蹤 <ExternalLink size={16} />
