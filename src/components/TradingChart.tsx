@@ -50,6 +50,18 @@ export default function TradingChart({
                 textColor: "#94a3b8", // slate-400
                 attributionLogo: false, // Remove TV logo
             } as any,
+            localization: {
+                timeFormatter: (time: any) => {
+                    // Format tooltip time in Taipei timezone
+                    const date = new Date(time * 1000);
+                    return new Intl.DateTimeFormat('zh-TW', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: 'Asia/Taipei'
+                    }).format(date);
+                },
+            },
             width: chartContainerRef.current.clientWidth,
             height: height,
             grid: {
@@ -61,6 +73,16 @@ export default function TradingChart({
                 timeVisible: true,
                 secondsVisible: false,
                 borderColor: "rgba(255, 255, 255, 0.1)",
+                tickMarkFormatter: (time: any) => {
+                    // Convert UTC timestamp to Taipei time for display
+                    const date = new Date(time * 1000);
+                    return new Intl.DateTimeFormat('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: 'Asia/Taipei'
+                    }).format(date);
+                },
             },
             rightPriceScale: {
                 visible: enablePriceScale,
@@ -119,12 +141,20 @@ export default function TradingChart({
             const validData = data.filter(d => d && typeof d.time === 'string');
             const sortedData = [...validData].sort((a, b) => new Date(`2000/01/01 ${a.time || "00:00"}`).getTime() - new Date(`2000/01/01 ${b.time || "00:00"}`).getTime());
 
+            // Use Taipei timezone for chart data
             const today = new Date();
+            const taipeiDateStr = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Taipei',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(today); // YYYY-MM-DD format
+
             const chartData = sortedData.map(d => {
                 const timeStr = d.time || "09:00";
-                const [h, m] = timeStr.split(':').map(Number);
-                const date = new Date(today);
-                date.setHours(h, m, 0, 0);
+                // Create ISO string in Taipei timezone
+                const dateTimeStr = `${taipeiDateStr}T${timeStr}:00+08:00`;
+                const date = new Date(dateTimeStr);
 
                 return {
                     time: (date.getTime() / 1000) as Time,

@@ -66,13 +66,13 @@ export default function FhcCard({
 
             <div className="h-20 w-full mb-4">
                 {data && data.length > 0 ? (
-                    <div className="h-20 w-full pointer-events-none">
+                    <div className="h-20 w-full">
                         <TradingChart
                             data={data as { time: string; value: number }[]}
                             isUp={isUp}
                             height={80}
                             enableGrid={false}
-                            enableCrosshair={false}
+                            enableCrosshair={true}
                             enableTimeScale={false}
                             enablePriceScale={false}
                             lineWidth={2}

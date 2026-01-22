@@ -398,7 +398,7 @@ export default function DashboardPage() {
                 : (selectedId ? "xl:col-span-12 xl:pr-[420px]" : "xl:col-span-12")
             )}>
               {viewMode === 'grid' ? (
-                // Bento Grid Mode - High Density
+                // Grid Mode - Consistent Card Sizing (3 per row)
                 <div className={cn(
                   "grid gap-4 auto-rows-min",
                   selectedId
@@ -409,10 +409,7 @@ export default function DashboardPage() {
                     <div
                       key={stock.id}
                       onClick={() => handleStockClick(stock.id)}
-                      className={cn(
-                        "cursor-pointer",
-                        !selectedId && (idx === 0 || idx === 3 || idx === 6) ? "md:col-span-2" : ""
-                      )}
+                      className="cursor-pointer"
                     >
                       <FhcCard
                         {...stock}
@@ -477,17 +474,17 @@ export default function DashboardPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-accent/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">機構法人 (15日)</p>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">機構法人 (10日)</p>
                         <p className="text-2xl font-black text-accent font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.institutional, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">股</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">張</span>
                         </p>
                       </div>
                       <div className={cn("p-5 bg-white/[0.02] rounded-[1.5rem] border transition-all duration-500", isChipLoading ? "border-fall/20 animate-pulse" : "border-white/5 hover:border-white/10")}>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">政府官股 (15日)</p>
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 font-fira">政府官股 (10日)</p>
                         <p className="text-2xl font-black text-fall font-fira tracking-tighter">
                           {isChipLoading ? "---" : selectedStock.chipData.reduce((acc, curr) => acc + curr.government, 0).toLocaleString()}
-                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">股</span>
+                          <span className="text-[10px] text-slate-600 font-bold ml-1 uppercase pl-1">張</span>
                         </p>
                       </div>
                     </div>

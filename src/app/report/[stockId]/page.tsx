@@ -225,12 +225,12 @@ export default function ReportPage() {
 
                     {/* 法人動向 */}
                     <div className="p-5 glass bg-slate-900/50 rounded-xl border border-white/5">
-                        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">法人動向 (15D)</div>
+                        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">法人動向 (10D)</div>
                         <div className={cn(
                             "text-3xl font-black font-mono mb-2",
                             totalInstitutional > 0 ? "text-rise" : "text-fall"
                         )}>
-                            {totalInstitutional > 0 ? "+" : ""}{(totalInstitutional / 1000).toFixed(1)}張
+                            {totalInstitutional > 0 ? "+" : ""}{totalInstitutional.toLocaleString()} 張
                         </div>
                         <div className={cn(
                             "text-sm font-bold px-2 py-1 rounded inline-block",
@@ -265,6 +265,8 @@ export default function ReportPage() {
                                 data={priceHistory}
                                 isUp={stockData?.isUp ?? false}
                                 height={256}
+                                enableTimeScale={false}
+                                enablePriceScale={false}
                             />
                         </div>
                     </div>
