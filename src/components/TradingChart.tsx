@@ -5,7 +5,7 @@ import { createChart, ColorType, IChartApi, Time, AreaSeries, AreaSeriesPartialO
 import { cn } from "@/lib/utils";
 
 interface TradingChartProps {
-    data: { time: string; value: number }[];
+    data: { time?: string; value: number }[];
     isUp: boolean;
     height?: number;
     enableGrid?: boolean;
@@ -114,12 +114,14 @@ export default function TradingChart({
 
         // Convert data to lightweight-charts format
         if (data.length > 0) {
-            // Ensure data is sorted by time
-            const sortedData = [...data].sort((a, b) => new Date(`2000/01/01 ${a.time}`).getTime() - new Date(`2000/01/01 ${b.time}`).getTime());
+            // Validate and sort data
+            const validData = data.filter(d => d && typeof d.time === 'string');
+            const sortedData = [...validData].sort((a, b) => new Date(`2000/01/01 ${a.time || "00:00"}`).getTime() - new Date(`2000/01/01 ${b.time || "00:00"}`).getTime());
 
             const today = new Date();
             const chartData = sortedData.map(d => {
-                const [h, m] = d.time.split(':').map(Number);
+                const timeStr = d.time || "09:00";
+                const [h, m] = timeStr.split(':').map(Number);
                 const date = new Date(today);
                 date.setHours(h, m, 0, 0);
 
