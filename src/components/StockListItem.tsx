@@ -47,7 +47,7 @@ export default function StockListItem({
             {/* Middle: Compact Chart - Full Horizontal Width */}
             <div className="h-10 flex-1 max-w-[400px] focus:outline-none -mx-4">
                 {chartData.length > 0 ? (
-                    <div className="h-10 w-full pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity">
+                    <div className="h-10 w-full pointer-events-none transition-opacity">
                         <TradingChart
                             data={chartData as { time: string; value: number }[]}
                             isUp={isUp}
@@ -56,7 +56,7 @@ export default function StockListItem({
                             enableCrosshair={false}
                             enableTimeScale={false}
                             enablePriceScale={false}
-                            lineWidth={1}
+                            lineWidth={2}
                         />
                     </div>
                 ) : (
@@ -77,7 +77,7 @@ export default function StockListItem({
                         change > 0 ? "text-rise" : change < 0 ? "text-fall" : "text-mute"
                     )}>
                         {change > 0 ? <TrendingUp size={8} /> : change < 0 ? <TrendingDown size={8} /> : <Minus size={8} />}
-                        <span>{typeof change === 'number' ? `${change > 0 ? "+" : ""}${change.toFixed(2)}%` : '---'}</span>
+                        <span>{typeof diff === 'number' && typeof change === 'number' ? `${change > 0 ? "+" : ""}${diff.toFixed(2)} (${change > 0 ? "+" : ""}${change.toFixed(2)}%)` : '---'}</span>
                     </div>
                 </div>
 
