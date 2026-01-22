@@ -1,0 +1,82 @@
+[
+  {
+    "date": "1/9",
+    "institutional": -4909,
+    "government": 631,
+    "rawForeign": -4206061,
+    "rawInvestment": -966744,
+    "rawDealer": 263876
+  },
+  {
+    "date": "1/12",
+    "institutional": -16255,
+    "government": 2055,
+    "rawForeign": -13698465,
+    "rawInvestment": -2764813,
+    "rawDealer": 208493
+  },
+  {
+    "date": "1/13",
+    "institutional": -6844,
+    "government": 660,
+    "rawForeign": -4402283,
+    "rawInvestment": -2598594,
+    "rawDealer": 157252
+  },
+  {
+    "date": "1/14",
+    "institutional": -10277,
+    "government": 1433,
+    "rawForeign": -9550759,
+    "rawInvestment": -866282,
+    "rawDealer": 139842
+  },
+  {
+    "date": "1/15",
+    "institutional": -883,
+    "government": -360,
+    "rawForeign": 2401090,
+    "rawInvestment": -3763188,
+    "rawDealer": 478830
+  },
+  {
+    "date": "1/16",
+    "institutional": -780,
+    "government": 486,
+    "rawForeign": -3240660,
+    "rawInvestment": 2486428,
+    "rawDealer": -26111
+  },
+  {
+    "date": "1/19",
+    "institutional": 11600,
+    "government": -2203,
+    "rawForeign": 14688918,
+    "rawInvestment": -3068687,
+    "rawDealer": -20139
+  },
+  {
+    "date": "1/20",
+    "institutional": 1314,
+    "government": -299,
+    "rawForeign": 1994137,
+    "rawInvestment": -418430,
+    "rawDealer": -261292
+  },
+  {
+    "date": "1/21",
+    "institutional": 10501,
+    "government": -1667,
+    "rawForeign": 11116166,
+    "rawInvestment": -2062090,
+    "rawDealer": 1446645
+  },
+  {
+    "date": "1/22",
+    "institutional": 5100,
+    "government": -1119,
+    "rawForeign": 7458459,
+    "rawInvestment": -3008180,
+    "rawDealer": 650012
+  }
+]
