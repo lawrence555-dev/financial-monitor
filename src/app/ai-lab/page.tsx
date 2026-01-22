@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import TickerTape from "@/components/TickerTape";
-import { BrainCircuit, Sparkles, MessageSquare, Terminal, Zap, ShieldAlert } from "lucide-react";
+import { BrainCircuit, Sparkles, MessageSquare, Terminal, Zap, ShieldAlert, CheckCircle, XCircle, Lightbulb } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AiLabPage() {
@@ -22,12 +22,12 @@ export default function AiLabPage() {
         try {
             const resp = await fetch("/api/alerts/test", { method: "POST" });
             if (resp.ok) {
-                setTestStatus("✅ 測試訊息已成功送達 Line！");
+                setTestStatus("success");
             } else {
-                setTestStatus("❌ 發送失敗，請確認 .env 中已加入 LINE_NOTIFY_TOKEN。");
+                setTestStatus("error");
             }
         } catch (e) {
-            setTestStatus("❌ 連線異常，請檢查伺服器狀態。");
+            setTestStatus("error_net");
         } finally {
             setIsTestingLine(false);
         }
@@ -81,7 +81,10 @@ export default function AiLabPage() {
                                 點擊此卡片可立即發送一則測試警報至您的手機，驗證 Line Notify 通知系統是否已正確連結。
                             </p>
                             <div className="pt-4 flex items-center gap-2 text-[10px] font-black text-fall uppercase tracking-widest">
-                                {testStatus || "💡 點擊立即測試通知系統"}
+                                {testStatus === "success" && <span className="flex items-center gap-2 text-emerald-400"><CheckCircle size={14} /> 測試訊息送達</span>}
+                                {testStatus === "error" && <span className="flex items-center gap-2 text-rose-500"><XCircle size={14} /> 發送失敗</span>}
+                                {testStatus === "error_net" && <span className="flex items-center gap-2 text-rose-500"><XCircle size={14} /> 連線異常</span>}
+                                {!testStatus && <span className="flex items-center gap-2 text-slate-500"><Lightbulb size={14} /> 點擊測試通知</span>}
                             </div>
                         </div>
 

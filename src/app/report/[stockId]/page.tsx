@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Download, Share2, Bell } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Download, Share2, Bell, Bot, Star } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, LineChart, Line } from "recharts";
 import { cn } from "@/lib/utils";
 import TradingChart from "@/components/TradingChart";
@@ -328,7 +328,13 @@ export default function ReportPage() {
                             </div>
                             <div className="p-3 bg-slate-800/50 rounded-lg">
                                 <div className="text-xs text-slate-400 mb-1">殖利率穩定度</div>
-                                <div className="text-xl font-black text-amber-400">★★★★☆</div>
+                                <div className="flex gap-0.5 text-amber-400 my-0.5">
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} fill="currentColor" />
+                                    <Star size={16} className="text-slate-600" />
+                                </div>
                                 <div className="text-xs text-slate-500">連續配息</div>
                             </div>
                             <div className="p-3 bg-slate-800/50 rounded-lg col-span-2">
@@ -354,7 +360,7 @@ export default function ReportPage() {
                 <div className="p-6 glass bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-2xl border border-white/10 mb-8">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                            <span className="text-lg">🤖</span>
+                            <Bot size={24} className="text-white" />
                         </div>
                         <div>
                             <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">AI 投資建議</div>

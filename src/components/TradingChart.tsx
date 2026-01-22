@@ -48,7 +48,8 @@ export default function TradingChart({
             layout: {
                 background: { type: ColorType.Solid, color: "transparent" },
                 textColor: "#94a3b8", // slate-400
-            },
+                attributionLogo: false, // Remove TV logo
+            } as any,
             width: chartContainerRef.current.clientWidth,
             height: height,
             grid: {
